@@ -18,6 +18,7 @@ Thumbs.db
 # ===== 依赖 =====
 node_modules/
 vendor/
+docs/
 
 # ===== 构建产物 =====
 build/

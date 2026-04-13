@@ -1,0 +1,23 @@
+package ${packageName}.core.domain.entity;
+
+import lombok.Data;
+import org.sagacity.sqltoy.config.annotation.Column;
+import org.sagacity.sqltoy.config.annotation.Entity;
+import org.sagacity.sqltoy.config.annotation.Id;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.math.BigDecimal;
+
+/**
+ * ${tableComment}
+ * @author ${author}
+ */
+@Data
+@Entity(tableName = "${tableName}")
+public class ${className} implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+${columns}
+}

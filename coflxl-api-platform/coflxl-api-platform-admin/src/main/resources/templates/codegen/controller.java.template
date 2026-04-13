@@ -1,0 +1,58 @@
+package ${packageName}.admin.controller;
+
+import com.coflxl.api.common.response.ApiResponse;
+import com.coflxl.api.core.datasource.DynamicDataSourceContextHolder;
+import ${packageName}.core.domain.entity.${className};
+import org.sagacity.sqltoy.dao.SqlToyLazyDao;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * ${tableComment} Controller
+ * @author ${author}
+ */
+@RestController
+@RequestMapping("/admin/${pathName}")
+public class Admin${className}Controller {
+
+    @Autowired
+    private SqlToyLazyDao sqlToyLazyDao;
+
+    @PostMapping("/save")
+    public ApiResponse<Boolean> save(@RequestBody ${className} ${objectName}) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        sqlToyLazyDao.saveOrUpdate(${objectName});
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(true);
+    }
+
+    @GetMapping("/page")
+    public ApiResponse<org.sagacity.sqltoy.model.Page<${className}>> page(
+            @RequestParam(value = "pageNo", defaultValue = "1") Long pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam Map<String, Object> params) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        org.sagacity.sqltoy.model.Page<${className}> pageModel = new org.sagacity.sqltoy.model.Page<>();
+        pageModel.setPageNo(pageNo);
+        pageModel.setPageSize(pageSize);
+
+        StringBuilder sql = new StringBuilder("select * from ${tableName} where 1=1 ");
+${searchConditions}
+        
+        org.sagacity.sqltoy.model.Page<${className}> result = sqlToyLazyDao.findPageBySql(
+            pageModel, sql.toString(), params, ${className}.class);
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(result);
+    }
+
+    @PostMapping("/delete/{id}")
+    public ApiResponse<Boolean> delete(@PathVariable("id") Long id) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        sqlToyLazyDao.executeSql("delete from ${tableName} where id = :id", Map.of("id", id));
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(true);
+    }
+}

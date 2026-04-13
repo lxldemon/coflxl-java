@@ -4,6 +4,8 @@ import DataSourceManage from '../views/system/DataSourceManage.vue'
 import CallLog from '../views/api/CallLog.vue'
 import Login from '../views/Login.vue'
 import SqlWorkbench from '../views/api/SqlWorkbench.vue'
+import CodeGen from '../views/system/CodeGen.vue'
+import ChampionDetails from '../views/system/ChampionDetailsManage.vue'
 
 import Home from '../views/Home.vue'
 import SystemManage from '../views/system/SystemManage.vue'
@@ -49,6 +51,16 @@ const router = createRouter({
       path: '/sql-workbench',
       name: 'SqlWorkbench',
       component: SqlWorkbench
+    },
+    {
+      path: '/code-gen',
+      name: 'CodeGen',
+      component: CodeGen
+    },
+    {
+      path: '/champion-details',
+      name: 'champion-details',
+      component: ChampionDetails
     }
   ]
 })

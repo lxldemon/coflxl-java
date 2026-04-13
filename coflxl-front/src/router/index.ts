@@ -1,0 +1,67 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import ApiManage from '../views/api/ApiManage.vue'
+import DataSourceManage from '../views/system/DataSourceManage.vue'
+import CallLog from '../views/api/CallLog.vue'
+import Login from '../views/Login.vue'
+import SqlWorkbench from '../views/api/SqlWorkbench.vue'
+
+import Home from '../views/Home.vue'
+import SystemManage from '../views/system/SystemManage.vue'
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login
+    },
+    {
+      path: '/',
+      redirect: '/home'
+    },
+    {
+      path: '/home',
+      name: 'Home',
+      component: Home
+    },
+    {
+      path: '/system-manage',
+      name: 'SystemManage',
+      component: SystemManage
+    },
+    {
+      path: '/api-manage',
+      name: 'ApiManage',
+      component: ApiManage
+    },
+    {
+      path: '/data-source-manage',
+      name: 'DataSourceManage',
+      component: DataSourceManage
+    },
+    {
+      path: '/call-log',
+      name: 'CallLog',
+      component: CallLog
+    },
+    {
+      path: '/sql-workbench',
+      name: 'SqlWorkbench',
+      component: SqlWorkbench
+    }
+  ]
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  if (to.name !== 'Login' && !token) {
+    next({ name: 'Login' })
+  } else if (to.name === 'Login' && token) {
+    next({ path: '/' })
+  } else {
+    next()
+  }
+})
+
+export default router

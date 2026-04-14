@@ -38,10 +38,6 @@
             <el-icon><MagicStick /></el-icon>
             <span>代码生成</span>
           </el-menu-item>
-          <el-menu-item index="/champion-details">
-            <el-icon><MagicStick /></el-icon>
-            <span>LOL英雄</span>
-          </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="api">

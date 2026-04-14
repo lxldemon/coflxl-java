@@ -57,11 +57,11 @@ const router = createRouter({
       name: 'CodeGen',
       component: CodeGen
     },
-    {
+   /* {
       path: '/champion-details',
       name: 'champion-details',
       component: ChampionDetails
-    }
+    }*/
   ]
 })
 

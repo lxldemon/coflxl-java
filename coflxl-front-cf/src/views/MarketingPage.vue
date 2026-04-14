@@ -145,6 +145,18 @@
       <div class="container mx-auto max-w-2xl">
         <h2 class="text-4xl font-bold text-gray-800 text-center mb-8">立即与我们联系</h2>
         <p class="text-lg text-gray-700 text-center mb-8">填写下表，我们的专家将尽快与您取得联系，为您提供专属解决方案和合作细节。</p>
+
+        <div class="flex flex-col md:flex-row justify-center items-center gap-8 mb-12">
+          <div class="text-center">
+            <img src="/marketing/wechat_qr.jpg" alt="微信扫码联系" class="w-40 h-40 mx-auto border border-gray-200 rounded-lg shadow-md">
+            <p class="text-gray-700 mt-2">微信扫码联系</p>
+          </div>
+          <div class="text-center">
+            <img src="/marketing/QQ.jpg" alt="QQ扫码联系" class="w-40 h-40 mx-auto border border-gray-200 rounded-lg shadow-md">
+            <p class="text-gray-700 mt-2">QQ扫码联系</p>
+          </div>
+        </div>
+
         <form class="bg-white p-8 rounded-lg shadow-md">
           <div class="mb-4">
             <label for="name" class="block text-gray-700 text-sm font-bold mb-2">姓名:</label>

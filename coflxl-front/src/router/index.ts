@@ -61,7 +61,7 @@ const router = createRouter({
       path: '/champion-details',
       name: 'champion-details',
       component: ChampionDetails
-    }
+    },
   ]
 })
 

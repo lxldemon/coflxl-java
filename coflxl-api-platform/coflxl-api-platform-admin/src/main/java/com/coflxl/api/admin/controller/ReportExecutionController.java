@@ -70,6 +70,11 @@ public class ReportExecutionController {
             return ApiResponse.error(404, "Report instance not found");
         }
 
+        if ("OFFLINE".equals(instance.getPublishStatus())) {
+            DynamicDataSourceContextHolder.clear();
+            return ApiResponse.error(403, "当前报表已下线，无法访问");
+        }
+
         ReportDefinition queryDef = new ReportDefinition();
         queryDef.setId(instance.getDefinitionId());
         ReportDefinition definition = sqlToyLazyDao.load(queryDef);

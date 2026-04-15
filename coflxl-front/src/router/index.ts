@@ -5,10 +5,14 @@ import CallLog from '../views/api/CallLog.vue'
 import Login from '../views/Login.vue'
 import SqlWorkbench from '../views/api/SqlWorkbench.vue'
 import CodeGen from '../views/system/CodeGen.vue'
-import ChampionDetails from '../views/system/ChampionDetailsManage.vue'
 
 import Home from '../views/Home.vue'
 import SystemManage from '../views/system/SystemManage.vue'
+
+import ReportTemplateManage from '../views/report/ReportTemplateManage.vue'
+import ReportInstanceManage from '../views/report/ReportInstanceManage.vue'
+import ReportDesigner from '../views/report/ReportDesigner.vue'
+import ReportViewer from '../views/report/ReportViewer.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -57,11 +61,26 @@ const router = createRouter({
       name: 'CodeGen',
       component: CodeGen
     },
-   /* {
-      path: '/champion-details',
-      name: 'champion-details',
-      component: ChampionDetails
-    }*/
+    {
+      path: '/report-template',
+      name: 'ReportTemplateManage',
+      component: ReportTemplateManage
+    },
+    {
+      path: '/report-instance',
+      name: 'ReportInstanceManage',
+      component: ReportInstanceManage
+    },
+    {
+      path: '/report-designer',
+      name: 'ReportDesigner',
+      component: ReportDesigner
+    },
+    {
+      path: '/report/view/:id',
+      name: 'ReportViewer',
+      component: ReportViewer
+    }
   ]
 })
 

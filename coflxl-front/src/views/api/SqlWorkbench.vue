@@ -123,9 +123,17 @@ onMounted(async () => {
             jsonTemplate[p.paramCode] = p.defaultValue || ''
           }
         })
-        requestJson.value = JSON.stringify(jsonTemplate, null, 2)
+        if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
+          requestJson.value = JSON.stringify({ dataList: [jsonTemplate] }, null, 2)
+        } else {
+          requestJson.value = JSON.stringify(jsonTemplate, null, 2)
+        }
       } else {
-        requestJson.value = '{\n\n}'
+        if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
+          requestJson.value = '{\n  "dataList": []\n}'
+        } else {
+          requestJson.value = '{\n\n}'
+        }
       }
     } catch (e) {
       ElMessage.error('获取接口详情失败')

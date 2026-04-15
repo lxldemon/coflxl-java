@@ -20,11 +20,11 @@
             <h1 class="text-2xl font-bold text-gray-800">{{ reportData.name }}</h1>
             <p class="text-gray-500 text-sm mt-1">{{ reportData.description }}</p>
           </div>
-          <el-button @click="loadReport">刷新数据</el-button>
+          <el-button @click="loadReport(true)">刷新数据</el-button>
         </div>
 
         <!-- Dynamic Parameters Form -->
-        <el-form :inline="true" :model="searchParams" class="mt-4" v-if="visibleParameters.length > 0">
+        <el-form :inline="true" :model="searchParams" class="mt-4" v-if="visibleParameters.length > 0" @submit.prevent="loadReport(true)">
           <el-form-item v-for="param in visibleParameters" :key="param.name" :label="param.label || param.name">
             <el-date-picker
                 v-if="param.componentType === 'date'"
@@ -56,16 +56,44 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="loadReport">查询</el-button>
+            <el-button type="primary" @click="loadReport(true)">查询</el-button>
           </el-form-item>
         </el-form>
       </div>
 
       <div class="flex-1 p-6 overflow-auto">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <el-table :data="reportData.data" border stripe style="width: 100%">
-            <DynamicTableColumn v-for="(col, index) in tableColumns" :key="index" :col="col" />
-          </el-table>
+        <div v-loading="queryLoading">
+          <div v-if="layoutItems.length === 0" class="text-gray-500 text-center py-8 bg-white rounded-lg shadow-sm border border-gray-200">请配置可视化组件和布局</div>
+          <div class="grid grid-cols-12 gap-4">
+            <div v-for="item in layoutItems" :key="item.widgetId"
+                 class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col"
+                 :style="{ gridColumn: `span ${item.span || 12} / span ${item.span || 12}`, height: item.height ? item.height + 'px' : '400px' }">
+              <div class="mb-3 font-medium text-gray-700" v-if="getWidget(item.widgetId)?.title">{{ getWidget(item.widgetId)?.title }}</div>
+
+              <div class="flex-1 overflow-hidden">
+                <ChartRenderer
+                    v-if="getWidget(item.widgetId)?.type === 'chart'"
+                    :data="reportData.data || []"
+                    :config="getWidget(item.widgetId)?.chartConfig || {}"
+                />
+
+                <el-table
+                    v-else-if="getWidget(item.widgetId)?.type === 'table'"
+                    :data="reportData.data || []"
+                    border
+                    stripe
+                    style="width: 100%"
+                    height="100%"
+                >
+                  <DynamicTableColumn
+                      v-for="(col, index) in getTableColumns(getWidget(item.widgetId))"
+                      :key="index"
+                      :col="col"
+                  />
+                </el-table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -78,31 +106,68 @@ import { useRoute } from 'vue-router'
 import request from '../../utils/request'
 import { ElMessage } from 'element-plus'
 import DynamicTableColumn from '../../components/DynamicTableColumn.vue'
+import ChartRenderer from '../../components/ChartRenderer.vue'
 
 const route = useRoute()
 const loading = ref(true)
+const queryLoading = ref(false)
 const error = ref('')
 const reportData = shallowRef<any>(null)
 const searchParams = ref<any>({})
 const parameters = ref<any[]>([])
 
-const tableColumns = computed(() => {
+const parsedConfig = computed(() => {
   try {
     if (reportData.value?.visualizationConfig) {
-      const config = JSON.parse(reportData.value.visualizationConfig)
-      if (config.columns && config.columns.length > 0) {
-        return config.columns
-      }
+      return JSON.parse(reportData.value.visualizationConfig)
     }
   } catch (e) {
-    console.error('Failed to parse visualizationConfig:', e)
+    // ignore
   }
+  return { widgets: [] }
+})
 
+const parsedLayout = computed(() => {
+  try {
+    if (reportData.value?.layoutConfig) {
+      return JSON.parse(reportData.value.layoutConfig)
+    }
+  } catch (e) {
+    // ignore
+  }
+  return { layout: 'vertical', items: [] }
+})
+
+const layoutItems = computed(() => {
+  const layout = parsedLayout.value
+  if (layout && layout.items && layout.items.length > 0) {
+    return layout.items
+  }
+  // Fallback to rendering all widgets if no layout is defined
+  const config = parsedConfig.value
+  if (config && config.widgets) {
+    return config.widgets.map((w: any) => ({ widgetId: w.id, height: 400 }))
+  }
+  return []
+})
+
+const getWidget = (widgetId: string) => {
+  const config = parsedConfig.value
+  if (config && config.widgets) {
+    return config.widgets.find((w: any) => w.id === widgetId)
+  }
+  return null
+}
+
+const getTableColumns = (widget: any) => {
+  if (widget && widget.tableConfig && widget.tableConfig.columns && widget.tableConfig.columns.length > 0) {
+    return widget.tableConfig.columns
+  }
   if (reportData.value && reportData.value.data && reportData.value.data.length > 0) {
     return Object.keys(reportData.value.data[0]).map(key => ({ prop: key, label: key }))
   }
   return []
-})
+}
 
 const visibleParameters = computed(() => {
   return parameters.value.filter(p => p.visible !== false)
@@ -116,7 +181,7 @@ const parseOptions = (optionsStr: string) => {
   })
 }
 
-const loadReport = async () => {
+const loadReport = async (isQuery = false) => {
   const id = route.params.id
   if (!id) {
     error.value = '报表 ID 不能为空'
@@ -124,7 +189,11 @@ const loadReport = async () => {
     return
   }
 
-  loading.value = true
+  if (isQuery === true) {
+    queryLoading.value = true
+  } else {
+    loading.value = true
+  }
   error.value = ''
 
   try {
@@ -143,10 +212,11 @@ const loadReport = async () => {
     error.value = e.message || '获取报表数据失败，请检查报表是否已发布或权限不足'
   } finally {
     loading.value = false
+    queryLoading.value = false
   }
 }
 
 onMounted(() => {
-  loadReport()
+  loadReport(false)
 })
 </script>

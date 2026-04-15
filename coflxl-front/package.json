@@ -15,9 +15,11 @@
     "@guolao/vue-monaco-editor": "^1.5.4",
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.15.0",
+    "echarts": "^5.5.0",
     "element-plus": "^2.13.6",
     "vue": "^3.5.32",
-    "vue-router": "^4.5.1"
+    "vue-echarts": "^7.0.3",
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

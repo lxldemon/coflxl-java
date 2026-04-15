@@ -69,9 +69,80 @@
               </div>
             </div>
 
-            <el-divider>可视化配置 (JSON)</el-divider>
-            <div class="h-[200px] border border-gray-200 rounded-md overflow-hidden">
+            <el-divider>
+              可视化配置 (JSON)
+              <el-popover placement="right" title="配置说明" :width="500" trigger="hover">
+                <template #reference>
+                  <el-icon class="ml-1 cursor-pointer text-blue-500"><QuestionFilled /></el-icon>
+                </template>
+                <div class="text-sm text-gray-600 space-y-2">
+                  <p><strong>1. 默认表格（取SQL字段）</strong><br/>不配置 <code>columns</code> 或保持为空，系统将自动读取 SQL 结果的字段作为表头。</p>
+                  <p><strong>2. 多级表头</strong><br/>在 <code>columns</code> 中使用 <code>children</code> 嵌套。例如：<br/>
+                    <pre class="bg-gray-100 p-2 rounded text-xs">"columns": [
+  {
+    "label": "基础信息",
+    "children": [
+      { "label": "姓名", "prop": "name" },
+      { "label": "年龄", "prop": "age" }
+    ]
+  }
+]</pre>
+                  </p>
+                  <p><strong>3. 组件化配置 (Widgets)</strong><br/>
+                    使用 <code>widgets</code> 数组定义多个组件，支持 <code>table</code> 和 <code>chart</code>。<br/>
+                    <pre class="bg-gray-100 p-2 rounded text-xs">{
+  "widgets": [
+    {
+      "id": "chart1",
+      "type": "chart",
+      "title": "图表分析",
+      "chartConfig": {
+        "chartType": "bar",
+        "xAxis": "category_field",
+        "yAxis": ["value_field1"],
+        "seriesNames": ["销售额"]
+      }
+    },
+    {
+      "id": "table1",
+      "type": "table",
+      "title": "明细数据",
+      "tableConfig": { "columns": [] }
+    }
+  ]
+}</pre>
+                  </p>
+                </div>
+              </el-popover>
+            </el-divider>
+            <div class="h-[200px] border border-gray-200 rounded-md overflow-hidden mb-4">
               <MonacoEditor v-model="form.visualizationConfigJson" language="json" height="100%" theme="vs" />
+            </div>
+
+            <el-divider>
+              布局配置 (JSON)
+              <el-popover placement="right" title="布局说明" :width="500" trigger="hover">
+                <template #reference>
+                  <el-icon class="ml-1 cursor-pointer text-blue-500"><QuestionFilled /></el-icon>
+                </template>
+                <div class="text-sm text-gray-600 space-y-2">
+                  <p><strong>栅格布局 (Grid)</strong><br/>
+                    基于 12 列栅格系统。<code>span: 12</code> 为占满整行，<code>span: 6</code> 为占一半。<br/>
+                    <strong>示例：上面两个图表，下面一个表格</strong>
+                    <pre class="bg-gray-100 p-2 rounded text-xs">{
+  "layout": "grid",
+  "items": [
+    { "widgetId": "chart1", "span": 6, "height": 300 },
+    { "widgetId": "chart2", "span": 6, "height": 300 },
+    { "widgetId": "table1", "span": 12, "height": 500 }
+  ]
+}</pre>
+                  </p>
+                </div>
+              </el-popover>
+            </el-divider>
+            <div class="h-[150px] border border-gray-200 rounded-md overflow-hidden">
+              <MonacoEditor v-model="form.layoutConfigJson" language="json" height="100%" theme="vs" />
             </div>
           </el-form>
         </div>
@@ -96,15 +167,43 @@
         </div>
 
         <!-- Preview Result Area -->
-        <div v-if="previewData || previewLoading" class="h-[300px] border-t border-gray-200 flex flex-col" v-loading="previewLoading">
+        <div v-if="previewData || previewLoading" class="h-[400px] border-t border-gray-200 flex flex-col" v-loading="previewLoading">
           <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
             <span class="text-sm font-medium text-gray-700">数据预览 (前 50 条)</span>
             <el-button link @click="previewData = null"><el-icon><Close /></el-icon></el-button>
           </div>
           <div class="flex-1 p-4 overflow-auto bg-white">
-            <el-table v-if="previewData" :data="previewData" border stripe size="small">
-              <DynamicTableColumn v-for="(col, index) in tableColumns" :key="index" :col="col" />
-            </el-table>
+            <div v-if="layoutItems.length === 0" class="text-gray-500 text-center py-8">请配置可视化组件和布局</div>
+            <div class="grid grid-cols-12 gap-4">
+              <div v-for="item in layoutItems" :key="item.widgetId"
+                   class="bg-white rounded-lg border border-gray-200 p-4 flex flex-col"
+                   :style="{ gridColumn: `span ${item.span || 12} / span ${item.span || 12}`, height: item.height ? item.height + 'px' : '300px' }">
+                <div class="mb-3 font-medium text-gray-700" v-if="getWidget(item.widgetId)?.title">{{ getWidget(item.widgetId)?.title }}</div>
+
+                <div class="flex-1 overflow-hidden">
+                  <ChartRenderer
+                      v-if="getWidget(item.widgetId)?.type === 'chart'"
+                      :data="previewData || []"
+                      :config="getWidget(item.widgetId)?.chartConfig || {}"
+                  />
+
+                  <el-table
+                      v-else-if="getWidget(item.widgetId)?.type === 'table'"
+                      :data="previewData || []"
+                      border
+                      stripe
+                      size="small"
+                      height="100%"
+                  >
+                    <DynamicTableColumn
+                        v-for="(col, index) in getTableColumns(getWidget(item.widgetId))"
+                        :key="index"
+                        :col="col"
+                    />
+                  </el-table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -115,11 +214,12 @@
 <script setup lang="ts">
 import { ref, shallowRef, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Back, Delete, Close } from '@element-plus/icons-vue'
+import { Back, Delete, Close, QuestionFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '../../utils/request'
 import MonacoEditor from '../../components/MonacoEditor.vue'
 import DynamicTableColumn from '../../components/DynamicTableColumn.vue'
+import ChartRenderer from '../../components/ChartRenderer.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -130,23 +230,58 @@ const dataSources = ref<any[]>([])
 const previewDataSource = ref('')
 const previewData = shallowRef<any[] | null>(null)
 
-const tableColumns = computed(() => {
+const parsedConfig = computed(() => {
   try {
     if (form.value.visualizationConfigJson) {
-      const config = JSON.parse(form.value.visualizationConfigJson)
-      if (config.columns && config.columns.length > 0) {
-        return config.columns
-      }
+      return JSON.parse(form.value.visualizationConfigJson)
     }
   } catch (e) {
-    console.error('Failed to parse visualizationConfigJson:', e)
+    // ignore
   }
+  return { widgets: [] }
+})
 
+const parsedLayout = computed(() => {
+  try {
+    if (form.value.layoutConfigJson) {
+      return JSON.parse(form.value.layoutConfigJson)
+    }
+  } catch (e) {
+    // ignore
+  }
+  return { layout: 'vertical', items: [] }
+})
+
+const layoutItems = computed(() => {
+  const layout = parsedLayout.value
+  if (layout && layout.items && layout.items.length > 0) {
+    return layout.items
+  }
+  // Fallback to rendering all widgets if no layout is defined
+  const config = parsedConfig.value
+  if (config && config.widgets) {
+    return config.widgets.map((w: any) => ({ widgetId: w.id, height: 300 }))
+  }
+  return []
+})
+
+const getWidget = (widgetId: string) => {
+  const config = parsedConfig.value
+  if (config && config.widgets) {
+    return config.widgets.find((w: any) => w.id === widgetId)
+  }
+  return null
+}
+
+const getTableColumns = (widget: any) => {
+  if (widget && widget.tableConfig && widget.tableConfig.columns && widget.tableConfig.columns.length > 0) {
+    return widget.tableConfig.columns
+  }
   if (previewData.value && previewData.value.length > 0) {
     return Object.keys(previewData.value[0]).map(key => ({ prop: key, label: key }))
   }
   return []
-})
+}
 
 const paramsList = ref<any[]>([])
 
@@ -157,8 +292,8 @@ const form = ref({
   category: '',
   dataSourceCode: '',
   sqlQuery: 'SELECT * FROM users LIMIT 10',
-  visualizationConfigJson: '{\n  "type": "table",\n  "columns": []\n}',
-  layoutConfigJson: '{}'
+  visualizationConfigJson: '{\n  "widgets": [\n    {\n      "id": "table1",\n      "type": "table",\n      "title": "明细数据",\n      "tableConfig": {\n        "columns": []\n      }\n    }\n  ]\n}',
+  layoutConfigJson: '{\n  "layout": "vertical",\n  "items": [\n    { "widgetId": "table1", "height": 500 }\n  ]\n}'
 })
 
 const parseSqlParams = () => {
@@ -200,8 +335,8 @@ onMounted(async () => {
         category: detail.category,
         dataSourceCode: detail.dataSourceCode || '',
         sqlQuery: detail.sqlQuery,
-        visualizationConfigJson: detail.visualizationConfigJson || '{\n  "type": "table",\n  "columns": []\n}',
-        layoutConfigJson: detail.layoutConfigJson || '{}'
+        visualizationConfigJson: detail.visualizationConfigJson || '{\n  "widgets": [\n    {\n      "id": "table1",\n      "type": "table",\n      "title": "明细数据",\n      "tableConfig": {\n        "columns": []\n      }\n    }\n  ]\n}',
+        layoutConfigJson: detail.layoutConfigJson || '{\n  "layout": "vertical",\n  "items": [\n    { "widgetId": "table1", "height": 500 }\n  ]\n}'
       }
       if (detail.dataSourceCode) {
         previewDataSource.value = detail.dataSourceCode

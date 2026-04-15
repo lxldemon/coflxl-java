@@ -177,19 +177,19 @@
             <div class="grid grid-cols-12 gap-4">
               <div v-for="item in layoutItems" :key="item.widgetId"
                    class="bg-white rounded-lg border border-gray-200 p-4 flex flex-col"
-                   :style="{ gridColumn: `span ${item.span || 12} / span ${item.span || 12}`, height: item.height ? item.height + 'px' : '300px' }">
+                   :style="{ gridColumn: `span ${item.span || 12}`, height: item.height ? item.height + 'px' : '300px' }">
                 <div class="mb-3 font-medium text-gray-700" v-if="getWidget(item.widgetId)?.title">{{ getWidget(item.widgetId)?.title }}</div>
 
                 <div class="flex-1 overflow-hidden">
                   <ChartRenderer
                       v-if="getWidget(item.widgetId)?.type === 'chart'"
-                      :data="previewData || []"
+                      :data="getActualPreviewData() || []"
                       :config="getWidget(item.widgetId)?.chartConfig || {}"
                   />
 
                   <el-table
                       v-else-if="getWidget(item.widgetId)?.type === 'table'"
-                      :data="previewData || []"
+                      :data="getActualPreviewData() || []"
                       border
                       stripe
                       size="small"
@@ -273,12 +273,20 @@ const getWidget = (widgetId: string) => {
   return null
 }
 
+const getActualPreviewData = () => {
+  if (!previewData.value) return []
+  if (Array.isArray(previewData.value)) return previewData.value
+  if (previewData.value.data && Array.isArray(previewData.value.data)) return previewData.value.data
+  return []
+}
+
 const getTableColumns = (widget: any) => {
   if (widget && widget.tableConfig && widget.tableConfig.columns && widget.tableConfig.columns.length > 0) {
     return widget.tableConfig.columns
   }
-  if (previewData.value && previewData.value.length > 0) {
-    return Object.keys(previewData.value[0]).map(key => ({ prop: key, label: key }))
+  const data = getActualPreviewData()
+  if (data && data.length > 0) {
+    return Object.keys(data[0]).map(key => ({ prop: key, label: key }))
   }
   return []
 }

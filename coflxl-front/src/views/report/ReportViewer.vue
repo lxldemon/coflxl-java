@@ -67,7 +67,7 @@
           <div class="grid grid-cols-12 gap-4">
             <div v-for="item in layoutItems" :key="item.widgetId"
                  class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col"
-                 :style="{ gridColumn: `span ${item.span || 12} / span ${item.span || 12}`, height: item.height ? item.height + 'px' : '400px' }">
+                 :style="{ gridColumn: `span ${item.span || 12}`, height: item.height ? item.height + 'px' : '400px' }">
               <div class="mb-3 font-medium text-gray-700" v-if="getWidget(item.widgetId)?.title">{{ getWidget(item.widgetId)?.title }}</div>
 
               <div class="flex-1 overflow-hidden">

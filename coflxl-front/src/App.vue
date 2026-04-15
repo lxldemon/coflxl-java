@@ -1,12 +1,12 @@
 <template>
-  <div v-if="route.name === 'Login'" class="h-screen w-screen">
+  <div v-if="route.name === 'Login' || route.name === 'ReportViewer'" class="h-screen w-screen">
     <router-view></router-view>
   </div>
   <div v-else class="app-container h-screen flex overflow-hidden bg-gray-100">
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-800 text-slate-300 flex flex-col shadow-xl z-10">
       <div class="h-16 flex items-center justify-center border-b border-slate-700">
-        <h1 class="text-xl font-bold text-white tracking-wider">接口在线管理平台</h1>
+        <h1 class="text-xl font-bold text-white tracking-wider">在线管理平台</h1>
       </div>
       <el-menu
           :default-active="route.path"
@@ -38,10 +38,6 @@
             <el-icon><MagicStick /></el-icon>
             <span>代码生成</span>
           </el-menu-item>
-          <el-menu-item index="/champion-details">
-            <el-icon><MagicStick /></el-icon>
-            <span>LOL英雄</span>
-          </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="api">
@@ -58,12 +54,27 @@
             <span>调用日志</span>
           </el-menu-item>
         </el-sub-menu>
+
+        <el-sub-menu index="report">
+          <template #title>
+            <el-icon><DataAnalysis /></el-icon>
+            <span>报表中心</span>
+          </template>
+          <el-menu-item index="/report-template">
+            <el-icon><Histogram /></el-icon>
+            <span>报表模板管理</span>
+          </el-menu-item>
+          <el-menu-item index="/report-instance">
+            <el-icon><DataLine /></el-icon>
+            <span>报表实例管理</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col overflow-hidden">
-      <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-0" v-if="route.name !== 'SqlWorkbench'">
+      <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-0" v-if="route.name !== 'SqlWorkbench' && route.name !== 'ReportDesigner'">
         <h2 class="text-lg font-medium text-gray-800">{{ currentRouteName }}</h2>
         <div class="flex items-center">
           <span class="mr-4 text-sm text-gray-600">欢迎, {{ username }}</span>
@@ -80,7 +91,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Setting, Coin, Document, Monitor, Platform, House, Connection } from '@element-plus/icons-vue'
+import { Setting, Coin, Document, Monitor, Platform, House, Connection, MagicStick, DataAnalysis, Histogram, DataLine } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
 const route = useRoute()
@@ -93,7 +104,11 @@ const routeNames: Record<string, string> = {
   'ApiManage': '接口管理',
   'DataSourceManage': '数据源管理',
   'CallLog': '调用日志',
-  'SqlWorkbench': 'SQL 智慧工作台'
+  'SqlWorkbench': 'SQL 智慧工作台',
+  'CodeGen': '代码生成',
+  'ReportTemplateManage': '报表模板管理',
+  'ReportInstanceManage': '报表实例管理',
+  'ReportDesigner': '报表设计器'
 }
 const currentRouteName = computed(() => routeNames[route.name as string] || '')
 

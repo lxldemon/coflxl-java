@@ -8,11 +8,11 @@
 
       <el-form :model="form" :rules="rules" ref="loginForm" label-position="top">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名 (admin)" prefix-icon="User" size="large" />
+          <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon="User" size="large" />
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码 (123456)" prefix-icon="Lock" show-password size="large" @keyup.enter="handleLogin" />
+          <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" show-password size="large" @keyup.enter="handleLogin" />
         </el-form-item>
 
         <el-form-item class="mt-6">

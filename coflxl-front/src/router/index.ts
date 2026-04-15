@@ -15,7 +15,7 @@ import ReportDesigner from '../views/report/ReportDesigner.vue'
 import ReportViewer from '../views/report/ReportViewer.vue'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/platform/'),
   routes: [
     {
       path: '/login',
@@ -86,7 +86,12 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  if (to.name !== 'Login' && !token) {
+  // 公开访问的路由白名单
+  const publicRoutes = ['Login', 'ReportViewer']
+
+  if (publicRoutes.includes(to.name as string)) {
+    next()
+  } else if (!token) {
     next({ name: 'Login' })
   } else if (to.name === 'Login' && token) {
     next({ path: '/' })

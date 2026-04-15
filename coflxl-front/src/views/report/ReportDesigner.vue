@@ -38,7 +38,10 @@
             </el-form-item>
 
             <el-divider>参数定义</el-divider>
-            <el-button type="primary" plain size="small" class="mb-2" @click="addParam">添加参数</el-button>
+            <div class="mb-2">
+              <el-button type="primary" plain size="small" @click="addParam">添加参数</el-button>
+              <el-button type="success" plain size="small" @click="parseSqlParams">解析SQL参数</el-button>
+            </div>
             <div v-for="(param, index) in paramsList" :key="index" class="flex flex-col gap-2 mb-4 bg-gray-50 p-3 rounded border border-gray-200">
               <div class="flex gap-2 items-center">
                 <el-input v-model="param.name" placeholder="参数名(如 startDate)" size="small" class="flex-1" />
@@ -56,6 +59,10 @@
                   <el-option label="下拉框" value="select" />
                   <el-option label="日期选择" value="date" />
                 </el-select>
+                <div class="flex items-center gap-1 ml-2">
+                  <span class="text-xs text-gray-500">显示</span>
+                  <el-switch v-model="param.visible" size="small" />
+                </div>
               </div>
               <div class="flex gap-2 items-center mt-1" v-if="param.componentType === 'select'">
                 <el-input v-model="param.options" placeholder="下拉选项，格式如: 1:是,0:否" size="small" class="w-full" />
@@ -84,18 +91,19 @@
               language="sql"
               height="100%"
               theme="vs-dark"
+              @blur="parseSqlParams"
           />
         </div>
 
         <!-- Preview Result Area -->
-        <div v-if="previewData" class="h-[300px] border-t border-gray-200 flex flex-col">
+        <div v-if="previewData || previewLoading" class="h-[300px] border-t border-gray-200 flex flex-col" v-loading="previewLoading">
           <div class="px-4 py-2 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
             <span class="text-sm font-medium text-gray-700">数据预览 (前 50 条)</span>
             <el-button link @click="previewData = null"><el-icon><Close /></el-icon></el-button>
           </div>
           <div class="flex-1 p-4 overflow-auto bg-white">
-            <el-table :data="previewData" border stripe size="small">
-              <el-table-column v-for="col in previewColumns" :key="col" :prop="col" :label="col" />
+            <el-table v-if="previewData" :data="previewData" border stripe size="small">
+              <DynamicTableColumn v-for="(col, index) in tableColumns" :key="index" :col="col" />
             </el-table>
           </div>
         </div>
@@ -111,18 +119,31 @@ import { Back, Delete, Close } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import request from '../../utils/request'
 import MonacoEditor from '../../components/MonacoEditor.vue'
+import DynamicTableColumn from '../../components/DynamicTableColumn.vue'
 
 const router = useRouter()
 const route = useRoute()
 
 const saving = ref(false)
+const previewLoading = ref(false)
 const dataSources = ref<any[]>([])
 const previewDataSource = ref('')
 const previewData = shallowRef<any[] | null>(null)
 
-const previewColumns = computed(() => {
+const tableColumns = computed(() => {
+  try {
+    if (form.value.visualizationConfigJson) {
+      const config = JSON.parse(form.value.visualizationConfigJson)
+      if (config.columns && config.columns.length > 0) {
+        return config.columns
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse visualizationConfigJson:', e)
+  }
+
   if (previewData.value && previewData.value.length > 0) {
-    return Object.keys(previewData.value[0])
+    return Object.keys(previewData.value[0]).map(key => ({ prop: key, label: key }))
   }
   return []
 })
@@ -140,7 +161,8 @@ const form = ref({
   layoutConfigJson: '{}'
 })
 
-watch(() => form.value.sqlQuery, (newSql) => {
+const parseSqlParams = () => {
+  const newSql = form.value.sqlQuery
   if (!newSql) return
   // 匹配 :paramName 格式的参数
   const regex = /:([a-zA-Z0-9_]+)/g
@@ -157,12 +179,13 @@ watch(() => form.value.sqlQuery, (newSql) => {
           defaultValue: '',
           label: name,
           componentType: 'input',
-          options: ''
+          options: '',
+          visible: true
         })
       }
     })
   }
-})
+}
 
 onMounted(async () => {
   await fetchDataSources()
@@ -206,7 +229,7 @@ const fetchDataSources = async () => {
 }
 
 const addParam = () => {
-  paramsList.value.push({ name: '', type: 'string', defaultValue: '', label: '', componentType: 'input' })
+  paramsList.value.push({ name: '', type: 'string', defaultValue: '', label: '', componentType: 'input', visible: true })
 }
 
 const previewReport = async () => {
@@ -214,6 +237,7 @@ const previewReport = async () => {
     ElMessage.warning('请输入 SQL')
     return
   }
+  previewLoading.value = true
   try {
     // 构造测试参数
     const testParams: any = {}
@@ -230,6 +254,8 @@ const previewReport = async () => {
     ElMessage.success('预览成功')
   } catch (e: any) {
     ElMessage.error(e.message || '预览失败')
+  } finally {
+    previewLoading.value = false
   }
 }
 

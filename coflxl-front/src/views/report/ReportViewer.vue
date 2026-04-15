@@ -24,8 +24,8 @@
         </div>
 
         <!-- Dynamic Parameters Form -->
-        <el-form :inline="true" :model="searchParams" class="mt-4" v-if="parameters.length > 0">
-          <el-form-item v-for="param in parameters" :key="param.name" :label="param.label || param.name">
+        <el-form :inline="true" :model="searchParams" class="mt-4" v-if="visibleParameters.length > 0">
+          <el-form-item v-for="param in visibleParameters" :key="param.name" :label="param.label || param.name">
             <el-date-picker
                 v-if="param.componentType === 'date'"
                 v-model="searchParams[param.name]"
@@ -64,7 +64,7 @@
       <div class="flex-1 p-6 overflow-auto">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
           <el-table :data="reportData.data" border stripe style="width: 100%">
-            <el-table-column v-for="col in columns" :key="col" :prop="col" :label="col" />
+            <DynamicTableColumn v-for="(col, index) in tableColumns" :key="index" :col="col" />
           </el-table>
         </div>
       </div>
@@ -77,6 +77,7 @@ import { ref, shallowRef, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import request from '../../utils/request'
 import { ElMessage } from 'element-plus'
+import DynamicTableColumn from '../../components/DynamicTableColumn.vue'
 
 const route = useRoute()
 const loading = ref(true)
@@ -85,11 +86,26 @@ const reportData = shallowRef<any>(null)
 const searchParams = ref<any>({})
 const parameters = ref<any[]>([])
 
-const columns = computed(() => {
+const tableColumns = computed(() => {
+  try {
+    if (reportData.value?.visualizationConfig) {
+      const config = JSON.parse(reportData.value.visualizationConfig)
+      if (config.columns && config.columns.length > 0) {
+        return config.columns
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse visualizationConfig:', e)
+  }
+
   if (reportData.value && reportData.value.data && reportData.value.data.length > 0) {
-    return Object.keys(reportData.value.data[0])
+    return Object.keys(reportData.value.data[0]).map(key => ({ prop: key, label: key }))
   }
   return []
+})
+
+const visibleParameters = computed(() => {
+  return parameters.value.filter(p => p.visible !== false)
 })
 
 const parseOptions = (optionsStr: string) => {

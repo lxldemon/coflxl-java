@@ -5,7 +5,7 @@
         :language="language"
         :theme="theme"
         :options="editorOptions"
-        @change="onChange"
+        @mount="handleMount"
     />
   </div>
 </template>
@@ -37,7 +37,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'blur'])
 
 const code = ref(props.modelValue)
 
@@ -47,8 +47,16 @@ watch(() => props.modelValue, (newVal) => {
   }
 })
 
-const onChange = (value: string) => {
-  emit('update:modelValue', value)
+watch(code, (newVal) => {
+  if (newVal !== props.modelValue) {
+    emit('update:modelValue', newVal)
+  }
+})
+
+const handleMount = (editor: any) => {
+  editor.onDidBlurEditorWidget(() => {
+    emit('blur')
+  })
 }
 
 const editorOptions = computed(() => ({

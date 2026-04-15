@@ -59,9 +59,12 @@
         <el-form-item label="参数配置">
           <div class="border border-gray-200 rounded p-2 w-full bg-gray-50">
             <div v-if="currentTemplateParams.length === 0" class="text-gray-400 text-sm">该模板无参数</div>
-            <div v-for="param in currentTemplateParams" :key="param.name" class="mb-2 flex items-center">
-              <span class="w-24 text-sm text-gray-600">{{ param.name }}:</span>
+            <div v-for="param in currentTemplateParams" :key="param.name" class="mb-2 flex items-center gap-2">
+              <span class="w-24 text-sm text-gray-600 truncate" :title="param.label || param.name">{{ param.label || param.name }}:</span>
               <el-input v-model="form.actualParams[param.name]" size="small" class="flex-1" :placeholder="param.type" />
+              <el-tag :type="param.visible !== false ? 'success' : 'info'" size="small">
+                {{ param.visible !== false ? '显示' : '隐藏' }}
+              </el-tag>
             </div>
           </div>
         </el-form-item>

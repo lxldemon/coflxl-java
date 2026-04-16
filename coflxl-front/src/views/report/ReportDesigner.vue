@@ -77,7 +77,7 @@
                 </template>
                 <div class="text-sm text-gray-600 space-y-2">
                   <p><strong>1. 默认表格（取SQL字段）</strong><br/>不配置 <code>columns</code> 或保持为空，系统将自动读取 SQL 结果的字段作为表头。</p>
-                  <p><strong>2. 多级表头</strong><br/>在 <code>columns</code> 中使用 <code>children</code> 嵌套。例如：<br/>
+                  <div><strong>2. 多级表头</strong><br/>在 <code>columns</code> 中使用 <code>children</code> 嵌套。例如：<br/>
                     <pre class="bg-gray-100 p-2 rounded text-xs">"columns": [
   {
     "label": "基础信息",
@@ -87,8 +87,8 @@
     ]
   }
 ]</pre>
-                  </p>
-                  <p><strong>3. 组件化配置 (Widgets)</strong><br/>
+                  </div>
+                  <div><strong>3. 组件化配置 (Widgets)</strong><br/>
                     使用 <code>widgets</code> 数组定义多个组件，支持 <code>table</code> 和 <code>chart</code>。<br/>
                     <strong>多数据集方案：</strong>如果需要不同组件显示不同数据，可在 SQL 中使用 <code>UNION ALL</code> 合并数据并增加类型列，然后在组件中配置 <code>dataFilter</code> 进行过滤。<br/>
                     <pre class="bg-gray-100 p-2 rounded text-xs">{
@@ -114,7 +114,7 @@
     }
   ]
 }</pre>
-                  </p>
+                  </div>
                 </div>
               </el-popover>
               <el-button link type="primary" size="small" class="ml-2" @click="formatJson('visualization')">格式化</el-button>
@@ -130,7 +130,7 @@
                   <el-icon class="ml-1 cursor-pointer text-blue-500"><QuestionFilled /></el-icon>
                 </template>
                 <div class="text-sm text-gray-600 space-y-2">
-                  <p><strong>栅格布局 (Grid)</strong><br/>
+                  <div><strong>栅格布局 (Grid)</strong><br/>
                     基于 12 列栅格系统。<code>span: 12</code> 为占满整行，<code>span: 6</code> 为占一半。<br/>
                     <strong>示例：上面两个图表，下面一个表格</strong>
                     <pre class="bg-gray-100 p-2 rounded text-xs">{
@@ -141,7 +141,7 @@
     { "widgetId": "table1", "span": 12, "height": 500 }
   ]
 }</pre>
-                  </p>
+                  </div>
                 </div>
               </el-popover>
               <el-button link type="primary" size="small" class="ml-2" @click="formatJson('layout')">格式化</el-button>

@@ -2,17 +2,17 @@
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="max-w-md w-full bg-white rounded-lg shadow-md p-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl font-bold text-gray-800">接口在线管理平台</h2>
+        <h2 class="text-3xl font-bold text-gray-800">API Platform</h2>
         <p class="text-gray-500 mt-2">请登录以继续</p>
       </div>
 
       <el-form :model="form" :rules="rules" ref="loginForm" label-position="top">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon="User" size="large" />
+          <el-input v-model="form.username" placeholder="请输入用户名 (admin)" prefix-icon="User" size="large" />
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" show-password size="large" @keyup.enter="handleLogin" />
+          <el-input v-model="form.password" type="password" placeholder="请输入密码 (123456)" prefix-icon="Lock" show-password size="large" @keyup.enter="handleLogin" />
         </el-form-item>
 
         <el-form-item class="mt-6">
@@ -29,6 +29,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import request from '../utils/request'
 
 const router = useRouter()
 const loginForm = ref()
@@ -46,22 +47,25 @@ const rules = {
 
 const handleLogin = async () => {
   if (!loginForm.value) return
-
-  await loginForm.value.validate((valid: boolean) => {
+  await loginForm.value.validate(async (valid: boolean) => {
     if (valid) {
+
       loading.value = true
-      // 模拟登录请求
-      setTimeout(() => {
+      try {
+        const res = await request.post('/admin/auth/login', {
+          username: form.username,
+          password: form.password
+        });
+
+        ElMessage.success('登录成功')
+        localStorage.setItem('token', res.token)
+        localStorage.setItem('username', res.user.nickname || res.user.username)
+        router.push('/')
+      } catch (e: any) {
+        // error already handled by request interceptor
+      } finally {
         loading.value = false
-        if (form.username === 'admin' && form.password === '123456') {
-          ElMessage.success('登录成功')
-          localStorage.setItem('token', 'mock-token-123456')
-          localStorage.setItem('username', form.username)
-          router.push('/')
-        } else {
-          ElMessage.error('用户名或密码错误 (提示: admin / 123456)')
-        }
-      }, 500)
+      }
     }
   })
 }

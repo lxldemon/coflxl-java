@@ -1,4 +1,4 @@
-package com.coflxl.api.admin.controller;
+package com.coflxl.api.admin.controller.system;
 
 import com.coflxl.api.admin.dto.CodeGenRequest;
 import com.coflxl.api.admin.service.CodeGenService;

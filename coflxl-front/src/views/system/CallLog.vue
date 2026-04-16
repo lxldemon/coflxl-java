@@ -36,9 +36,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import request from '../../utils/request'
+import request from '../../utils/request.ts'
 import ProTable from '../../components/ProTable.vue'
-import { formatTime } from '../../utils/format'
+import { formatTime } from '../../utils/format.ts'
 
 const proTable = ref()
 const searchForm = ref({ apiCode: '' })

@@ -1,4 +1,4 @@
-package com.coflxl.api.admin.controller;
+package com.coflxl.api.admin.controller.api;
 
 import com.coflxl.api.common.response.ApiResponse;
 import com.coflxl.api.core.datasource.DynamicDataSourceContextHolder;
@@ -21,7 +21,7 @@ public class AdminCallLogController {
             @RequestParam(value = "pageNo", defaultValue = "1") Long pageNo,
             @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize,
             @RequestParam(value = "apiCode", required = false) String apiCode) {
-        
+
         DynamicDataSourceContextHolder.set("PRIMARY");
         Page<Map<String, Object>> pageModel = new Page<>();
         pageModel.setPageNo(pageNo);
@@ -35,7 +35,7 @@ public class AdminCallLogController {
 
         Page<Map> result = sqlToyLazyDao.findPageBySql(pageModel, sql, Map.of("apiCode", apiCode == null ? "" : apiCode), Map.class);
         DynamicDataSourceContextHolder.clear();
-        
+
         return ApiResponse.success((Page) result);
     }
 }

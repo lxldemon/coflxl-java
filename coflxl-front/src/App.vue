@@ -16,59 +16,25 @@
           active-text-color="#ffffff"
           router
       >
-        <el-menu-item index="/home">
-          <el-icon><House /></el-icon>
-          <span>首页概览</span>
-        </el-menu-item>
+        <template v-for="menu in userMenus" :key="menu.id">
+          <!-- no children -->
+          <el-menu-item v-if="!menu.children || menu.children.length === 0" :index="menu.path || String(menu.id)">
+            <el-icon v-if="menu.icon"><component :is="Icons[menu.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
+            <span>{{ menu.name }}</span>
+          </el-menu-item>
 
-        <el-sub-menu index="system">
-          <template #title>
-            <el-icon><Setting /></el-icon>
-            <span>系统配置</span>
-          </template>
-          <el-menu-item index="/data-source-manage">
-            <el-icon><Coin /></el-icon>
-            <span>数据连接</span>
-          </el-menu-item>
-          <el-menu-item index="/system-manage">
-            <el-icon><Platform /></el-icon>
-            <span>系统管理</span>
-          </el-menu-item>
-          <el-menu-item index="/code-gen">
-            <el-icon><MagicStick /></el-icon>
-            <span>代码生成</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="api">
-          <template #title>
-            <el-icon><Connection /></el-icon>
-            <span>接口服务</span>
-          </template>
-          <el-menu-item index="/api-manage">
-            <el-icon><Monitor /></el-icon>
-            <span>接口管理</span>
-          </el-menu-item>
-          <el-menu-item index="/call-log">
-            <el-icon><Document /></el-icon>
-            <span>调用日志</span>
-          </el-menu-item>
-        </el-sub-menu>
-
-        <el-sub-menu index="report">
-          <template #title>
-            <el-icon><DataAnalysis /></el-icon>
-            <span>报表中心</span>
-          </template>
-          <el-menu-item index="/report-template">
-            <el-icon><Histogram /></el-icon>
-            <span>报表模板管理</span>
-          </el-menu-item>
-          <el-menu-item index="/report-instance">
-            <el-icon><DataLine /></el-icon>
-            <span>报表实例管理</span>
-          </el-menu-item>
-        </el-sub-menu>
+          <!-- with children -->
+          <el-sub-menu v-else :index="menu.path || String(menu.id)">
+            <template #title>
+              <el-icon v-if="menu.icon"><component :is="Icons[menu.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
+              <span>{{ menu.name }}</span>
+            </template>
+            <el-menu-item v-for="child in menu.children" :key="child.id" :index="child.path || String(child.id)">
+              <el-icon v-if="child.icon"><component :is="Icons[child.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
+              <span>{{ child.name }}</span>
+            </el-menu-item>
+          </el-sub-menu>
+        </template>
       </el-menu>
     </aside>
 
@@ -89,14 +55,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Setting, Coin, Document, Monitor, Platform, House, Connection, MagicStick, DataAnalysis, Histogram, DataLine } from '@element-plus/icons-vue'
+import * as Icons from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
+import request from './utils/request'
 
 const route = useRoute()
 const router = useRouter()
 const username = ref('')
+const userMenus = ref<any[]>([])
 
 const routeNames: Record<string, string> = {
   'Home': '首页概览',
@@ -108,12 +76,41 @@ const routeNames: Record<string, string> = {
   'CodeGen': '代码生成',
   'ReportTemplateManage': '报表模板管理',
   'ReportInstanceManage': '报表实例管理',
-  'ReportDesigner': '报表设计器'
+  'ReportDesigner': '报表设计器',
+  'UserManage': '用户管理',
+  'RoleManage': '角色管理',
+  'MenuManage': '菜单管理'
 }
-const currentRouteName = computed(() => routeNames[route.name as string] || '')
+const currentRouteName = computed(() => {
+  if (routeNames[route.name as string]) {
+    return routeNames[route.name as string]
+  }
+  return route.meta?.title as string || ''
+})
+
+const fetchUserMenus = async () => {
+  try {
+    const res = await request.get('/admin/sys/menu/userMenus')
+    if (res) {
+      userMenus.value = res as any
+    }
+  } catch (error) {
+    console.error('Failed to fetch user menus:', error)
+  }
+}
+
+watch(() => route.path, (newPath, oldPath) => {
+  if (oldPath === '/login' && newPath !== '/login') {
+    username.value = localStorage.getItem('username') || 'Admin'
+    fetchUserMenus()
+  }
+})
 
 onMounted(() => {
   username.value = localStorage.getItem('username') || 'Admin'
+  if (route.name !== 'Login') {
+    fetchUserMenus()
+  }
 })
 
 const handleLogout = () => {
@@ -124,6 +121,7 @@ const handleLogout = () => {
   }).then(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('username')
+    userMenus.value = []
     router.push('/login')
   }).catch(() => {})
 }

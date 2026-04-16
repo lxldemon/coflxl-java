@@ -1,4 +1,4 @@
-package com.coflxl.api.admin.controller;
+package com.coflxl.api.admin.controller.api;
 
 import com.coflxl.api.common.response.ApiResponse;
 import com.coflxl.api.core.datasource.DynamicDataSourceContextHolder;

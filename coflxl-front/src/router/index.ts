@@ -1,13 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import ApiManage from '../views/api/ApiManage.vue'
 import DataSourceManage from '../views/system/DataSourceManage.vue'
-import CallLog from '../views/api/CallLog.vue'
+import CallLog from '../views/system/CallLog.vue'
 import Login from '../views/Login.vue'
 import SqlWorkbench from '../views/api/SqlWorkbench.vue'
 import CodeGen from '../views/system/CodeGen.vue'
 
 import Home from '../views/Home.vue'
 import SystemManage from '../views/system/SystemManage.vue'
+import UserManage from '../views/system/UserManage.vue'
+import RoleManage from '../views/system/RoleManage.vue'
+import MenuManage from '../views/system/MenuManage.vue'
 
 import ReportTemplateManage from '../views/report/ReportTemplateManage.vue'
 import ReportInstanceManage from '../views/report/ReportInstanceManage.vue'
@@ -15,7 +18,7 @@ import ReportDesigner from '../views/report/ReportDesigner.vue'
 import ReportViewer from '../views/report/ReportViewer.vue'
 
 const router = createRouter({
-  history: createWebHistory('/platform/'),
+  history: createWebHistory(),
   routes: [
     {
       path: '/login',
@@ -57,6 +60,21 @@ const router = createRouter({
       component: SqlWorkbench
     },
     {
+      path: '/sys-user',
+      name: 'UserManage',
+      component: UserManage
+    },
+    {
+      path: '/sys-role',
+      name: 'RoleManage',
+      component: RoleManage
+    },
+    {
+      path: '/sys-menu',
+      name: 'MenuManage',
+      component: MenuManage
+    },
+    {
       path: '/code-gen',
       name: 'CodeGen',
       component: CodeGen
@@ -86,12 +104,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  // 公开访问的路由白名单
-  const publicRoutes = ['Login', 'ReportViewer']
-
-  if (publicRoutes.includes(to.name as string)) {
-    next()
-  } else if (!token) {
+  if (to.name !== 'Login' && !token) {
     next({ name: 'Login' })
   } else if (to.name === 'Login' && token) {
     next({ path: '/' })

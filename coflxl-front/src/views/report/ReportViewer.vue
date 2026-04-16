@@ -73,13 +73,13 @@
               <div class="flex-1 overflow-hidden">
                 <ChartRenderer
                     v-if="getWidget(item.widgetId)?.type === 'chart'"
-                    :data="reportData.data || []"
+                    :data="getWidgetData(getWidget(item.widgetId))"
                     :config="getWidget(item.widgetId)?.chartConfig || {}"
                 />
 
                 <el-table
                     v-else-if="getWidget(item.widgetId)?.type === 'table'"
-                    :data="reportData.data || []"
+                    :data="getWidgetData(getWidget(item.widgetId))"
                     border
                     stripe
                     style="width: 100%"
@@ -159,12 +159,29 @@ const getWidget = (widgetId: string) => {
   return null
 }
 
+const getActualReportData = () => {
+  if (!reportData.value) return []
+  if (Array.isArray(reportData.value)) return reportData.value
+  if (reportData.value.data && Array.isArray(reportData.value.data)) return reportData.value.data
+  return []
+}
+
+const getWidgetData = (widget: any) => {
+  const data = getActualReportData()
+  if (!data) return []
+  if (widget && widget.dataFilter && widget.dataFilter.field) {
+    return data.filter((item: any) => item[widget.dataFilter.field] == widget.dataFilter.value)
+  }
+  return data
+}
+
 const getTableColumns = (widget: any) => {
   if (widget && widget.tableConfig && widget.tableConfig.columns && widget.tableConfig.columns.length > 0) {
     return widget.tableConfig.columns
   }
-  if (reportData.value && reportData.value.data && reportData.value.data.length > 0) {
-    return Object.keys(reportData.value.data[0]).map(key => ({ prop: key, label: key }))
+  const data = getWidgetData(widget)
+  if (data && data.length > 0) {
+    return Object.keys(data[0]).map(key => ({ prop: key, label: key }))
   }
   return []
 }

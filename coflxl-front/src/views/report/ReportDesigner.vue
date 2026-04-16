@@ -90,12 +90,14 @@
                   </p>
                   <p><strong>3. 组件化配置 (Widgets)</strong><br/>
                     使用 <code>widgets</code> 数组定义多个组件，支持 <code>table</code> 和 <code>chart</code>。<br/>
+                    <strong>多数据集方案：</strong>如果需要不同组件显示不同数据，可在 SQL 中使用 <code>UNION ALL</code> 合并数据并增加类型列，然后在组件中配置 <code>dataFilter</code> 进行过滤。<br/>
                     <pre class="bg-gray-100 p-2 rounded text-xs">{
   "widgets": [
     {
       "id": "chart1",
       "type": "chart",
       "title": "图表分析",
+      "dataFilter": { "field": "data_type", "value": "sales" },
       "chartConfig": {
         "chartType": "bar",
         "xAxis": "category_field",
@@ -107,6 +109,7 @@
       "id": "table1",
       "type": "table",
       "title": "明细数据",
+      "dataFilter": { "field": "data_type", "value": "detail" },
       "tableConfig": { "columns": [] }
     }
   ]
@@ -114,6 +117,7 @@
                   </p>
                 </div>
               </el-popover>
+              <el-button link type="primary" size="small" class="ml-2" @click="formatJson('visualization')">格式化</el-button>
             </el-divider>
             <div class="h-[200px] border border-gray-200 rounded-md overflow-hidden mb-4">
               <MonacoEditor v-model="form.visualizationConfigJson" language="json" height="100%" theme="vs" />
@@ -140,6 +144,7 @@
                   </p>
                 </div>
               </el-popover>
+              <el-button link type="primary" size="small" class="ml-2" @click="formatJson('layout')">格式化</el-button>
             </el-divider>
             <div class="h-[150px] border border-gray-200 rounded-md overflow-hidden">
               <MonacoEditor v-model="form.layoutConfigJson" language="json" height="100%" theme="vs" />
@@ -183,13 +188,13 @@
                 <div class="flex-1 overflow-hidden">
                   <ChartRenderer
                       v-if="getWidget(item.widgetId)?.type === 'chart'"
-                      :data="getActualPreviewData() || []"
+                      :data="getWidgetData(getWidget(item.widgetId))"
                       :config="getWidget(item.widgetId)?.chartConfig || {}"
                   />
 
                   <el-table
                       v-else-if="getWidget(item.widgetId)?.type === 'table'"
-                      :data="getActualPreviewData() || []"
+                      :data="getWidgetData(getWidget(item.widgetId))"
                       border
                       stripe
                       size="small"
@@ -280,11 +285,20 @@ const getActualPreviewData = () => {
   return []
 }
 
+const getWidgetData = (widget: any) => {
+  const data = getActualPreviewData()
+  if (!data) return []
+  if (widget && widget.dataFilter && widget.dataFilter.field) {
+    return data.filter((item: any) => item[widget.dataFilter.field] == widget.dataFilter.value)
+  }
+  return data
+}
+
 const getTableColumns = (widget: any) => {
   if (widget && widget.tableConfig && widget.tableConfig.columns && widget.tableConfig.columns.length > 0) {
     return widget.tableConfig.columns
   }
-  const data = getActualPreviewData()
+  const data = getWidgetData(widget)
   if (data && data.length > 0) {
     return Object.keys(data[0]).map(key => ({ prop: key, label: key }))
   }
@@ -327,6 +341,21 @@ const parseSqlParams = () => {
         })
       }
     })
+  }
+}
+
+const formatJson = (type: 'visualization' | 'layout') => {
+  try {
+    if (type === 'visualization') {
+      const parsed = JSON.parse(form.value.visualizationConfigJson)
+      form.value.visualizationConfigJson = JSON.stringify(parsed, null, 2)
+    } else {
+      const parsed = JSON.parse(form.value.layoutConfigJson)
+      form.value.layoutConfigJson = JSON.stringify(parsed, null, 2)
+    }
+    ElMessage.success('格式化成功')
+  } catch (e: any) {
+    ElMessage.error(`JSON 格式错误: ${e.message}`)
   }
 }
 

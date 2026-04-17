@@ -18,6 +18,7 @@
       </template>
 
       <template #toolbar-right>
+        <el-button type="success" @click="exportExcel" plain>导出 Excel</el-button>
         <el-button type="primary" @click="handleAdd">新增用户</el-button>
       </template>
 
@@ -86,6 +87,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../utils/request'
 import ProTable from '../../components/ProTable.vue'
+import * as XLSX from 'xlsx'
 
 const proTable = ref()
 const searchForm = ref({ username: '' })
@@ -97,6 +99,31 @@ const columns = [
   { prop: 'status', label: '状态', slotName: 'statusSlot' },
   { prop: 'action', label: '操作', width: 220, slotName: 'actionSlot' }
 ]
+
+const exportExcel = async () => {
+  try {
+    const res: any = await request.get('/admin/sys/user/page', { params: { pageNo: 1, pageSize: 10000, ...searchForm.value } })
+    if (!res || !res.rows || res.rows.length === 0) {
+      ElMessage.warning('暂无数据可导出')
+      return
+    }
+    const exportData = res.rows.map((item: any) => ({
+      'ID': item.id,
+      '用户名': item.username,
+      '昵称': item.nickname,
+      '状态': item.status === 'ACTIVE' ? '正常' : '禁用',
+      '创建时间': item.createdAt
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, '用户列表')
+    XLSX.writeFile(workbook, `用户列表_${new Date().getTime()}.xlsx`)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    ElMessage.error('导出失败')
+  }
+}
 
 const getUsers = (params: any) => request.get('/admin/sys/user/page', { params })
 

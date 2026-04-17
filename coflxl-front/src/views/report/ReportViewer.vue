@@ -15,16 +15,20 @@
 
     <div v-else-if="reportData" class="flex-1 flex flex-col overflow-hidden">
       <div class="bg-white px-6 py-4 shadow-sm z-10 border-b border-gray-200">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center hide-on-print">
           <div>
             <h1 class="text-2xl font-bold text-gray-800">{{ reportData.name }}</h1>
             <p class="text-gray-500 text-sm mt-1">{{ reportData.description }}</p>
           </div>
-          <el-button @click="loadReport(true)">刷新数据</el-button>
+          <div>
+            <el-button type="success" plain @click="exportExcel">导出 Excel</el-button>
+            <el-button type="warning" plain @click="exportPdf">导出 PDF</el-button>
+            <el-button type="primary" @click="loadReport(true)">刷新数据</el-button>
+          </div>
         </div>
 
         <!-- Dynamic Parameters Form -->
-        <el-form :inline="true" :model="searchParams" class="mt-4" v-if="visibleParameters.length > 0" @submit.prevent="loadReport(true)">
+        <el-form :inline="true" :model="searchParams" class="mt-4 hide-on-print" v-if="visibleParameters.length > 0" @submit.prevent="loadReport(true)">
           <el-form-item v-for="param in visibleParameters" :key="param.name" :label="param.label || param.name">
             <el-date-picker
                 v-if="param.componentType === 'date'"
@@ -108,6 +112,8 @@ import { ElMessage } from 'element-plus'
 import DynamicTableColumn from '../../components/DynamicTableColumn.vue'
 import ChartRenderer from '../../components/ChartRenderer.vue'
 
+import * as XLSX from 'xlsx'
+
 const route = useRoute()
 const loading = ref(true)
 const queryLoading = ref(false)
@@ -115,6 +121,23 @@ const error = ref('')
 const reportData = shallowRef<any>(null)
 const searchParams = ref<any>({})
 const parameters = ref<any[]>([])
+
+const exportExcel = () => {
+  const data = getActualReportData()
+  if (!data || data.length === 0) {
+    ElMessage.warning('暂无数据可导出')
+    return
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, '报表数据')
+  XLSX.writeFile(workbook, `${reportData.value?.name || '报表'}.xlsx`)
+}
+
+const exportPdf = () => {
+  window.print()
+}
 
 const parsedConfig = computed(() => {
   try {
@@ -237,3 +260,23 @@ onMounted(() => {
   loadReport(false)
 })
 </script>
+
+<style scoped>
+@media print {
+  .hide-on-print {
+    display: none !important;
+  }
+  .h-screen {
+    height: auto !important;
+  }
+  .overflow-hidden {
+    overflow: visible !important;
+  }
+  .overflow-auto {
+    overflow: visible !important;
+  }
+  body, .bg-gray-50 {
+    background-color: white !important;
+  }
+}
+</style>

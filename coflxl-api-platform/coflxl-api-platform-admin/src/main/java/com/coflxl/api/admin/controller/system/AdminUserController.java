@@ -46,20 +46,22 @@ public class AdminUserController {
         DynamicDataSourceContextHolder.set("PRIMARY");
 
         if (user.getId() == null) {
-            if (!StringUtils.hasText(user.getPassword())) {
-                user.setPassword("123456"); // 设置默认密码
-            }
+            String rawPassword = StringUtils.hasText(user.getPassword()) ? user.getPassword() : "123456";
+            user.setPassword(org.springframework.util.DigestUtils.md5DigestAsHex(rawPassword.getBytes()));
             sqlToyLazyDao.save(user);
         } else {
-            if (!StringUtils.hasText(user.getPassword())) {
-                // 如果为空，不更新密码，仅更新其他字段
-                SysUser user1 = new SysUser();
-                user1.setId(user.getId());
-                SysUser dbUser = sqlToyLazyDao.load(user1);
-                if (dbUser != null) {
+            SysUser user1 = new SysUser();
+            user1.setId(user.getId());
+            SysUser dbUser = sqlToyLazyDao.load(user1);
+            if (dbUser != null) {
+                if (!StringUtils.hasText(user.getPassword())) {
+                    // 如果为空，不更新密码，仅更新其他字段
                     user.setPassword(dbUser.getPassword());
-                    user.setCreatedAt(dbUser.getCreatedAt()); // 保持原创建时间
+                } else if (!user.getPassword().equals(dbUser.getPassword())) {
+                    // 如果传入了新密码，且跟数据库不一致（未加密的），则加密。为简单这里直接重新计算md5
+                    user.setPassword(org.springframework.util.DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
                 }
+                user.setCreatedAt(dbUser.getCreatedAt()); // 保持原创建时间
             }
             sqlToyLazyDao.update(user);
         }

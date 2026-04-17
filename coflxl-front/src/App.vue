@@ -43,14 +43,50 @@
       <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-0" v-if="route.name !== 'SqlWorkbench' && route.name !== 'ReportDesigner'">
         <h2 class="text-lg font-medium text-gray-800">{{ currentRouteName }}</h2>
         <div class="flex items-center">
-          <span class="mr-4 text-sm text-gray-600">欢迎, {{ username }}</span>
-          <el-button link type="danger" @click="handleLogout">退出登录</el-button>
+          <el-dropdown @command="handleCommand" trigger="click">
+            <span class="el-dropdown-link flex items-center cursor-pointer text-sm text-gray-600 hover:text-blue-600 transition">
+              欢迎, {{ username }}
+              <el-icon class="ml-1"><component :is="Icons.ArrowDown" /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">
+                  <el-icon><component :is="Icons.User" /></el-icon>个人信息
+                </el-dropdown-item>
+                <el-dropdown-item command="changePwd">
+                  <el-icon><component :is="Icons.Lock" /></el-icon>修改密码
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout" class="text-red-500">
+                  <el-icon><component :is="Icons.SwitchButton" /></el-icon>退出登录
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </header>
       <div class="flex-1 overflow-auto p-6">
         <router-view></router-view>
       </div>
     </main>
+
+    <!-- Change Password Dialog -->
+    <el-dialog title="修改密码" v-model="pwdDialogVisible" width="400px" append-to-body>
+      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="80px">
+        <el-form-item label="原密码" prop="oldPassword">
+          <el-input v-model="pwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="pwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input v-model="pwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="pwdDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitChangePwd" :loading="pwdSaving">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -58,13 +94,74 @@
 import { computed, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as Icons from '@element-plus/icons-vue'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import request from './utils/request'
 
 const route = useRoute()
 const router = useRouter()
 const username = ref('')
 const userMenus = ref<any[]>([])
+
+// --- Password Change Logic ---
+const pwdDialogVisible = ref(false)
+const pwdSaving = ref(false)
+const pwdFormRef = ref()
+const pwdForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const validateConfirmPwd = (rule: any, value: any, callback: any) => {
+  if (value === '') {
+    callback(new Error('请再次输入新密码'))
+  } else if (value !== pwdForm.value.newPassword) {
+    callback(new Error('两次输入密码不一致!'))
+  } else {
+    callback()
+  }
+}
+
+const pwdRules = {
+  oldPassword: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
+  newPassword: [{ required: true, message: '请输入新密码', trigger: 'blur' }, { min: 6, message: '密码长度至少为6位', trigger: 'blur'}],
+  confirmPassword: [{ required: true, validator: validateConfirmPwd, trigger: 'blur' }]
+}
+
+const submitChangePwd = async () => {
+  if (!pwdFormRef.value) return
+  await pwdFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      pwdSaving.value = true
+      try {
+        await request.post('/admin/auth/updatePwd', {
+          oldPassword: pwdForm.value.oldPassword,
+          newPassword: pwdForm.value.newPassword
+        })
+        ElMessage.success('密码修改成功，请重新登录')
+        pwdDialogVisible.value = false
+        setTimeout(() => {
+          handleLogout(true)
+        }, 1500)
+      } finally {
+        pwdSaving.value = false
+      }
+    }
+  })
+}
+
+// --- Dropdown command handler ---
+const handleCommand = (command: string) => {
+  if (command === 'logout') {
+    handleLogout()
+  } else if (command === 'changePwd') {
+    pwdForm.value = { oldPassword: '', newPassword: '', confirmPassword: '' }
+    pwdDialogVisible.value = true
+    if (pwdFormRef.value) pwdFormRef.value.clearValidate()
+  } else if (command === 'profile') {
+    ElMessage.info('当前登录用户：' + username.value)
+  }
+}
 
 const routeNames: Record<string, string> = {
   'Home': '首页概览',
@@ -89,6 +186,9 @@ const currentRouteName = computed(() => {
 })
 
 const fetchUserMenus = async () => {
+  const token = localStorage.getItem('token')
+  if (!token) return
+
   try {
     const res = await request.get('/admin/sys/menu/userMenus')
     if (res) {
@@ -113,7 +213,15 @@ onMounted(() => {
   }
 })
 
-const handleLogout = () => {
+const handleLogout = (skipConfirm = false) => {
+  if (skipConfirm === true) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('username')
+    userMenus.value = []
+    router.push('/login')
+    return
+  }
+
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',

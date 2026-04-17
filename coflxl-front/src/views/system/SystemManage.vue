@@ -24,6 +24,7 @@
         <h2 class="text-lg font-medium">系统管理</h2>
       </template>
       <template #toolbar-right>
+        <el-button type="success" @click="exportExcel" plain>导出 Excel</el-button>
         <el-button type="primary" @click="openDialog()">新增系统</el-button>
       </template>
 
@@ -73,12 +74,39 @@ import request from '../../utils/request'
 import { ElMessage } from 'element-plus'
 import ProTable from '../../components/ProTable.vue'
 import { formatTime } from '../../utils/format'
+import * as XLSX from 'xlsx'
 
 const proTable = ref()
 const searchForm = ref({ systemCode: '', systemName: '' })
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const saving = ref(false)
+
+const exportExcel = async () => {
+  try {
+    const res: any = await request.get('/admin/system/list')
+    if (!res || res.length === 0) {
+      ElMessage.warning('暂无数据可导出')
+      return
+    }
+    const exportData = res.map((item: any) => ({
+      '系统编码': item.systemCode,
+      '系统名称': item.systemName,
+      '开发工程师': item.devEngineer,
+      '实施工程师': item.ssEngineer,
+      '创建时间': formatTime(item.createdAt),
+      '备注': item.remark
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, '系统管理列表')
+    XLSX.writeFile(workbook, `系统管理_${new Date().getTime()}.xlsx`)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    ElMessage.error('导出失败')
+  }
+}
 
 const columns = [
   { prop: 'systemCode', label: '系统编码', width: 150 },

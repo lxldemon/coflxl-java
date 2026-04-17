@@ -123,14 +123,52 @@ onMounted(async () => {
             jsonTemplate[p.paramCode] = p.defaultValue || ''
           }
         })
-        if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
+
+        if (detail.api && detail.api.executeMode === 'MULTI_SQL') {
+          // MULTI_SQL 主子表复合结构
+          const complexTemp = { ...jsonTemplate }
+          try {
+            if (detail.sql && detail.sql.sqlText) {
+              const steps = JSON.parse(detail.sql.sqlText)
+              if (Array.isArray(steps)) {
+                steps.forEach(step => {
+                  if (step.type === 'BATCH' && step.loopVar) {
+                    complexTemp[step.loopVar] = [ { "id": 1, "testField": "abc" } ]
+                  }
+                })
+              }
+            }
+          } catch(e) {}
+          requestJson.value = JSON.stringify(complexTemp, null, 2)
+        } else if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
           requestJson.value = JSON.stringify({ dataList: [jsonTemplate] }, null, 2)
+        } else if (detail.api && detail.api.operationType === 'PAGE') {
+          jsonTemplate.pageNo = 1
+          jsonTemplate.pageSize = 10
+          requestJson.value = JSON.stringify(jsonTemplate, null, 2)
         } else {
           requestJson.value = JSON.stringify(jsonTemplate, null, 2)
         }
       } else {
-        if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
+        if (detail.api && detail.api.executeMode === 'MULTI_SQL') {
+          let complexTemp: any = {}
+          try {
+            if (detail.sql && detail.sql.sqlText) {
+              const steps = JSON.parse(detail.sql.sqlText)
+              if (Array.isArray(steps)) {
+                steps.forEach(step => {
+                  if (step.type === 'BATCH' && step.loopVar) {
+                    complexTemp[step.loopVar] = [ { "id": 1 } ]
+                  }
+                })
+              }
+            }
+          } catch(e) {}
+          requestJson.value = JSON.stringify(complexTemp, null, 2)
+        } else if (detail.api && detail.api.operationType === 'BATCH_INSERT') {
           requestJson.value = '{\n  "dataList": []\n}'
+        } else if (detail.api && detail.api.operationType === 'PAGE') {
+          requestJson.value = '{\n  "pageNo": 1,\n  "pageSize": 10\n}'
         } else {
           requestJson.value = '{\n\n}'
         }

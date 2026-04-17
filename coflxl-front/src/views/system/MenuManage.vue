@@ -57,7 +57,28 @@
           <el-input v-model="form.path" placeholder="请输入路由地址" />
         </el-form-item>
         <el-form-item label="图标" prop="icon">
-          <el-input v-model="form.icon" placeholder="请输入图标名称(如: Monitor)" />
+          <el-select
+              v-model="form.icon"
+              placeholder="请选择图标"
+              filterable
+              clearable
+              style="width: 100%"
+          >
+            <template #prefix v-if="form.icon">
+              <el-icon><component :is="Icons[form.icon]" /></el-icon>
+            </template>
+            <el-option
+                v-for="item in iconOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+            >
+              <div class="flex items-center space-x-2">
+                <el-icon><component :is="Icons[item.value]" /></el-icon>
+                <span>{{ item.label }}</span>
+              </div>
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="排序" prop="sortNo">
           <el-input-number v-model="form.sortNo" :min="1" />
@@ -79,9 +100,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import * as Icons from '@element-plus/icons-vue'
 import request from '../../utils/request'
 
 const menus = ref<any[]>([])
+const iconOptions = Object.keys(Icons).map(key => ({ label: key, value: key }))
 
 const fetchMenus = async () => {
   const res = await request.get('/admin/sys/menu/tree')

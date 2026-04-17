@@ -100,4 +100,13 @@ public class AdminReportInstanceController {
         DynamicDataSourceContextHolder.clear();
         return ApiResponse.success(true);
     }
+
+    @PostMapping("/encryptId/{id}")
+    public ApiResponse<String> encryptId(@PathVariable("id") Long id) {
+        try {
+            return ApiResponse.success(com.coflxl.api.common.utils.SecureIdUtil.encrypt(id));
+        } catch (Exception e) {
+            return ApiResponse.error(500, "生成加密链接失败");
+        }
+    }
 }

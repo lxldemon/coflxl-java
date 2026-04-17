@@ -157,21 +157,22 @@ INSERT INTO sys_api_system (system_code, system_name, dev_engineer, ss_engineer)
 
 -- 迁移数据源配置
 INSERT INTO sys_api_data_source (code, name, jdbc_url, username, password_encrypted, driver_class_name, status, system_code) VALUES
-                             ('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
-                             ('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
-                             ('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
-                             ('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
-                             ('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
+                     ('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
+                     ('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
+                     ('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
+                     ('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
+                     ('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
 
 -- 迁移 API 定义
 INSERT INTO sys_api_definition (api_code, api_name, api_path, http_method, operation_type, execute_mode, data_source_code, status, system_code) VALUES
-                                                ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
-                                                ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
-                                                ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
-                                                ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                                ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
-                                                ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                                ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
+                                        ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
+                                        ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
+                                        ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
+                                        ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+                                        ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
+                                        ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+                                        ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
+
 
 -- 迁移 API SQL 定义
 INSERT INTO sys_api_sql_definition (api_code, sql_text, sql_type, enabled_flag) VALUES
@@ -182,9 +183,6 @@ INSERT INTO sys_api_sql_definition (api_code, sql_text, sql_type, enabled_flag) 
 ('updateZjdw', 'UPDATE \r\n#[@if(:type==''资金到位'') XM_ZJDW]\r\n#[@if(:type==''资金拨付'') XM_ZJBF]\r\n set SBTHCD = 11, XSBZT = ''未上报'', SSBZT = ''未上报'', SFTH = ''是'', SHZT = ''未审核''\r\nWHERE \r\nXMBM  in (\r\nSELECT\r\n	xmbm \r\nFROM\r\n	XMJBXX \r\nWHERE 1=1\r\n	and xmmc = :xmmc\r\n	AND （gcfl = :jsxz or jsxz =:jsxz)\r\n)', 'UPDATE', true),
 ('getJhyhXzqh', 'select * from xtgl_xzqh where 1=1 #[and name like :name] #[and id=:id]', 'SELECT', true),
 ('deleteTestLxl', 'delete from test_lxl where id in (:id)', 'DELETE', true);
-
-
-
 
 -- =============== RBAC ===================
 
@@ -240,11 +238,32 @@ url_pattern VARCHAR(256) NOT NULL,
 remark VARCHAR(256)
 );
 
-INSERT INTO sys_user (username, password, nickname) VALUES ('admin', '123456', '系统管理员');
+INSERT INTO sys_user (username, password, nickname) VALUES ('admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员');
 INSERT INTO sys_role (code, name) VALUES ('ADMIN', '超级管理员');
 INSERT INTO sys_user_role (user_id, role_id) VALUES (1, 1);
 
 INSERT INTO sys_api_whitelist (url_pattern, remark) VALUES ('/admin/auth/login', '登录接口');
 INSERT INTO sys_api_whitelist (url_pattern, remark) VALUES ('/admin/report/execute/preview', '报表预览');
 INSERT INTO sys_api_whitelist (url_pattern, remark) VALUES ('/admin/report/execute/instance/*', '报表实例');
+
+INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
+(1, NULL, '系统管理', '', 'Setting', 10),
+(2, 1, '数据源管理', '/data-source-manage', 'Coin', 1),
+(3, 1, '子系统管理', '/system-manage', 'Tools', 2),
+(4, 1, '代码生成', '/code-gen', 'MagicStick', 3),
+(5, 1, '调用日志', '/call-log', 'Document', 4),
+(6, 1, '用户管理', '/sys-user', 'User', 5),
+(7, 1, '角色管理', '/sys-role', 'Avatar', 6),
+(8, 1, '菜单管理', '/sys-menu', 'Menu', 7),
+(10, NULL, 'API开放平台', '', 'Monitor', 20),
+(11, 10, 'SQL工作台', '/sql-workbench', 'DataBoard', 1),
+(12, 10, '接口管理', '/api-manage', 'Monitor', 2),
+(20, NULL, '报表生成器', '', 'PieChart', 30),
+(21, 20, '报表模板管理', '/report-template', 'Tickets', 1),
+(22, 20, '报表实例管理', '/report-instance', 'DataAnalysis', 2);
+
+INSERT INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8),
+(1, 10), (1, 11), (1, 12),
+(1, 20), (1, 21), (1, 22);
 

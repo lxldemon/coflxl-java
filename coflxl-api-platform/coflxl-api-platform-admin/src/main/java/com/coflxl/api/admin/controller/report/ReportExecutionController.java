@@ -59,8 +59,15 @@ public class ReportExecutionController {
         }
     }
 
-    @PostMapping("/instance/{id}")
-    public ApiResponse<Map> executeInstance(@PathVariable("id") Long id, @RequestBody(required = false) Map<String, Object> dynamicParams) {
+    @PostMapping("/instance/{token}")
+    public ApiResponse<Map> executeInstance(@PathVariable("token") String token, @RequestBody(required = false) Map<String, Object> dynamicParams) {
+        Long id;
+        try {
+            id = com.coflxl.api.common.utils.SecureIdUtil.decrypt(token);
+        } catch (Exception e) {
+            return ApiResponse.error(400, "链接已失效或不合法");
+        }
+
         DynamicDataSourceContextHolder.set("PRIMARY");
         ReportInstance queryInstance = new ReportInstance();
         queryInstance.setId(id);

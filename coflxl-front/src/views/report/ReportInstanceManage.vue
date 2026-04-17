@@ -213,17 +213,27 @@ const changeStatus = async (row: any, action: 'publish' | 'offline') => {
   proTable.value.refresh()
 }
 
-const previewReport = (row: any) => {
-  window.open(`/report/view/${row.id}`, '_blank')
+const previewReport = async (row: any) => {
+  try {
+    const res: any = await request.post(`/admin/report/instance/encryptId/${row.id}`)
+    window.open(`/report/view/${res}`, '_blank')
+  } catch (e) {
+    ElMessage.error('获取加密链接失败')
+  }
 }
 
-const copyLink = (row: any) => {
-  const url = `${window.location.origin}/report/view/${row.id}`
-  navigator.clipboard.writeText(url).then(() => {
-    ElMessage.success('链接已复制到剪贴板')
-  }).catch(() => {
-    ElMessage.error('复制失败，请手动复制: ' + url)
-  })
+const copyLink = async (row: any) => {
+  try {
+    const res: any = await request.post(`/admin/report/instance/encryptId/${row.id}`)
+    const url = `${window.location.origin}/report/view/${res}`
+    navigator.clipboard.writeText(url).then(() => {
+      ElMessage.success('链接已复制到剪贴板')
+    }).catch(() => {
+      ElMessage.error('复制失败，请手动复制: ' + url)
+    })
+  } catch (e) {
+    ElMessage.error('获取加密链接失败')
+  }
 }
 
 onMounted(() => {

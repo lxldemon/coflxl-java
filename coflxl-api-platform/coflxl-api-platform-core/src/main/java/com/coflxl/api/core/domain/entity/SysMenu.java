@@ -37,4 +37,10 @@ public class SysMenu implements Serializable {
 
     @Column(name = "keep_alive_flag")
     private Boolean keepAliveFlag;
+
+    @Column(name = "type_flag")
+    private String typeFlag;
+
+    @Column(name = "permission_code")
+    private String permissionCode;
 }

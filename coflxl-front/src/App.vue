@@ -185,6 +185,17 @@ const currentRouteName = computed(() => {
   return route.meta?.title as string || ''
 })
 
+const filterNavigationMenus = (menus: any[]) => {
+  return menus
+      .filter(m => m.typeFlag !== 'BUTTON')
+      .map(m => {
+        if (m.children && m.children.length > 0) {
+          return { ...m, children: filterNavigationMenus(m.children) }
+        }
+        return m
+      })
+}
+
 const fetchUserMenus = async () => {
   const token = localStorage.getItem('token')
   if (!token) return
@@ -192,7 +203,26 @@ const fetchUserMenus = async () => {
   try {
     const res = await request.get('/admin/sys/menu/userMenus')
     if (res) {
-      userMenus.value = res as any
+      const allResources = res as any[]
+      // Render only standard menus in the sidebar nav
+      userMenus.value = filterNavigationMenus(allResources)
+
+      // Store all permissions internally or mapped for fast lookup
+      // Assuming res has flattened permissions or we can flatten them
+      const flattenPerms = (list: any[]): string[] => {
+        let perms: string[] = []
+        list.forEach(m => {
+          if (m.typeFlag === 'BUTTON' && m.permissionCode) {
+            perms.push(m.permissionCode)
+          }
+          if (m.children && m.children.length > 0) {
+            perms.push(...flattenPerms(m.children))
+          }
+        })
+        return perms
+      }
+      const myPerms = flattenPerms(allResources)
+      localStorage.setItem('permissions', JSON.stringify(myPerms))
     }
   } catch (error) {
     console.error('Failed to fetch user menus:', error)

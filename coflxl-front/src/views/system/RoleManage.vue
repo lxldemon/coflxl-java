@@ -18,8 +18,8 @@
       </template>
 
       <template #toolbar-right>
-        <el-button type="success" @click="exportExcel" plain>导出 Excel</el-button>
-        <el-button type="primary" @click="handleAdd">新增角色</el-button>
+        <el-button v-permission="'sys:role:export'" type="success" @click="exportExcel" plain>导出 Excel</el-button>
+        <el-button v-permission="'sys:role:add'" type="primary" @click="handleAdd">新增角色</el-button>
       </template>
 
       <template #statusSlot="{ row }">
@@ -27,9 +27,9 @@
       </template>
 
       <template #actionSlot="{ row }">
-        <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-        <el-button type="primary" link @click="handleAssignMenu(row)">分配菜单</el-button>
-        <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+        <el-button v-permission="'sys:role:update'" type="primary" link @click="handleEdit(row)">编辑</el-button>
+        <el-button v-permission="'sys:role:assign_menu'" type="primary" link @click="handleAssignMenu(row)">分配菜单</el-button>
+        <el-button v-permission="'sys:role:delete'" type="danger" link @click="handleDelete(row)">删除</el-button>
       </template>
     </ProTable>
 

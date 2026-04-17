@@ -157,21 +157,21 @@ INSERT INTO sys_api_system (system_code, system_name, dev_engineer, ss_engineer)
 
 -- 迁移数据源配置
 INSERT INTO sys_api_data_source (code, name, jdbc_url, username, password_encrypted, driver_class_name, status, system_code) VALUES
-                     ('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
-                     ('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
-                     ('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
-                     ('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
-                     ('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
+             ('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
+             ('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
+             ('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
+             ('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
+             ('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
 
 -- 迁移 API 定义
 INSERT INTO sys_api_definition (api_code, api_name, api_path, http_method, operation_type, execute_mode, data_source_code, status, system_code) VALUES
-                                        ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
-                                        ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
-                                        ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
-                                        ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                        ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
-                                        ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                        ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
+                                ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
+                                ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
+                                ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
+                                ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+                                ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
+                                ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+                                ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
 
 
 -- 迁移 API SQL 定义
@@ -214,7 +214,9 @@ component VARCHAR(256),
 icon VARCHAR(64),
 sort_no INT,
 visible_flag BOOLEAN DEFAULT TRUE,
-keep_alive_flag BOOLEAN DEFAULT FALSE
+keep_alive_flag BOOLEAN DEFAULT FALSE,
+type_flag VARCHAR(32) DEFAULT 'MENU',
+permission_code VARCHAR(128)
 );
 
 DROP TABLE IF EXISTS sys_user_role;

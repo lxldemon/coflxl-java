@@ -24,8 +24,8 @@
         <h2 class="text-lg font-medium">系统管理</h2>
       </template>
       <template #toolbar-right>
-        <el-button type="success" @click="exportExcel" plain>导出 Excel</el-button>
-        <el-button type="primary" @click="openDialog()">新增系统</el-button>
+        <el-button v-permission="'sys:dict:export'" type="success" @click="exportExcel" plain>导出 Excel</el-button>
+        <el-button v-permission="'sys:dict:add'" type="primary" @click="openDialog()">新增系统</el-button>
       </template>
 
       <template #timeSlot="{ row }">
@@ -33,10 +33,10 @@
       </template>
 
       <template #actionSlot="scope">
-        <el-button type="primary" link size="small" @click="openDialog(scope.row)">编辑</el-button>
+        <el-button v-permission="'sys:dict:update'" type="primary" link size="small" @click="openDialog(scope.row)">编辑</el-button>
         <el-popconfirm title="确定删除该系统吗？" @confirm="handleDelete(scope.row)">
           <template #reference>
-            <el-button type="danger" link size="small">删除</el-button>
+            <el-button v-permission="'sys:dict:delete'" type="danger" link size="small">删除</el-button>
           </template>
         </el-popconfirm>
       </template>

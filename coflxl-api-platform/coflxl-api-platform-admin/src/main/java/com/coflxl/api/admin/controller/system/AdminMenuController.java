@@ -22,7 +22,7 @@ public class AdminMenuController {
     @GetMapping("/tree")
     public ApiResponse<List<Map<String, Object>>> tree() {
         DynamicDataSourceContextHolder.set("PRIMARY");
-        String sql = "select id, parent_id as parentId, name, path, component, icon, sort_no as sortNo, visible_flag as visibleFlag, keep_alive_flag as keepAliveFlag, type_flag as typeFlag, permission_code as permissionCode from sys_menu order by sort_no asc";
+        String sql = "select id, parent_id as parentId, name, path, component, icon, sort_no as sortNo, visible_flag as visibleFlag, keep_alive_flag as keepAliveFlag, type_flag as typeFlag, permission_code as permissionCode, iframe_url as iframeUrl from sys_menu order by sort_no asc";
         List<Map> allMenus = sqlToyLazyDao.findBySql(sql, null, Map.class);
         DynamicDataSourceContextHolder.clear();
 
@@ -32,7 +32,7 @@ public class AdminMenuController {
     @GetMapping("/userMenus")
     public ApiResponse<List<Map<String, Object>>> userMenus(@RequestAttribute("userId") Long userId) {
         DynamicDataSourceContextHolder.set("PRIMARY");
-        String sql = "select distinct m.id, m.parent_id as parentId, m.name, m.path, m.component, m.icon, m.sort_no as sortNo, m.visible_flag as visibleFlag, m.keep_alive_flag as keepAliveFlag, m.type_flag as typeFlag, m.permission_code as permissionCode " +
+        String sql = "select distinct m.id, m.parent_id as parentId, m.name, m.path, m.component, m.icon, m.sort_no as sortNo, m.visible_flag as visibleFlag, m.keep_alive_flag as keepAliveFlag, m.type_flag as typeFlag, m.permission_code as permissionCode, m.iframe_url as iframeUrl " +
                 "from sys_menu m " +
                 "join sys_role_menu rm on m.id = rm.menu_id " +
                 "join sys_user_role ur on rm.role_id = ur.role_id " +

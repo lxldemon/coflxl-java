@@ -25,17 +25,19 @@ public class AdminUserController {
     public ApiResponse<Page<SysUser>> page(
             @RequestParam(defaultValue = "1") Long pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            @RequestParam(required = false) String username
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Long deptId
     ) {
         org.sagacity.sqltoy.model.Page<SysUser> page = new org.sagacity.sqltoy.model.Page<>();
         page.setPageNo(pageNo);
         page.setPageSize(pageSize);
         DynamicDataSourceContextHolder.set("PRIMARY");
-        String sql = "select id, username, nickname, status, created_at as createdAt from sys_user where 1=1 #[and username like :username] order by id desc";
+        String sql = "select id, username, nickname, status, dept_id as deptId, created_at as createdAt from sys_user where 1=1 #[and username like :username] #[and dept_id = :deptId] order by id desc";
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("username",
                 StringUtils.hasText(username) ? "%" + username.trim() + "%" : null
         );
+        params.put("deptId", deptId);
         page = sqlToyLazyDao.findPageBySql(page, sql, params, SysUser.class);
         DynamicDataSourceContextHolder.clear();
         return ApiResponse.success(page);

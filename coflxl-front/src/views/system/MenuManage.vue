@@ -20,6 +20,7 @@
         <template #default="{ row }">
           <span>{{ row.name }}</span>
           <el-tag v-if="row.typeFlag === 'BUTTON'" type="info" size="small" class="ml-2">按钮</el-tag>
+          <el-tag v-else-if="row.typeFlag === 'IFRAME'" type="success" size="small" class="ml-2">内嵌</el-tag>
           <el-tag v-else type="primary" size="small" class="ml-2">菜单</el-tag>
         </template>
       </el-table-column>
@@ -51,6 +52,7 @@
           <el-radio-group v-model="form.typeFlag" :disabled="dialogType === 'edit'">
             <el-radio label="MENU">菜单目录</el-radio>
             <el-radio label="BUTTON">操作按钮</el-radio>
+            <el-radio label="IFRAME">内嵌页面</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="上级资源">
@@ -63,14 +65,20 @@
               style="width: 100%"
           />
         </el-form-item>
-        <el-form-item :label="form.typeFlag === 'MENU' ? '菜单名称' : '按钮名称'" prop="name">
+        <el-form-item :label="form.typeFlag === 'BUTTON' ? '按钮名称' : '菜单名称'" prop="name">
           <el-input v-model="form.name" placeholder="请输入名称" />
         </el-form-item>
+
         <el-form-item label="权限标识" prop="permissionCode" v-if="form.typeFlag === 'BUTTON'">
           <el-input v-model="form.permissionCode" placeholder="如: sys:user:add" />
         </el-form-item>
-        <template v-if="form.typeFlag === 'MENU'">
-          <el-form-item label="路由地址" prop="path">
+
+        <el-form-item label="内嵌地址" prop="iframeUrl" v-if="form.typeFlag === 'IFRAME'">
+          <el-input v-model="form.iframeUrl" placeholder="如: https://www.bing.com" />
+        </el-form-item>
+
+        <template v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
+          <el-form-item label="路由地址" prop="path" v-if="form.typeFlag === 'MENU'">
             <el-input v-model="form.path" placeholder="请输入路由地址" />
           </el-form-item>
           <el-form-item label="图标" prop="icon">
@@ -101,7 +109,7 @@
         <el-form-item label="排序" prop="sortNo">
           <el-input-number v-model="form.sortNo" :min="1" />
         </el-form-item>
-        <el-form-item label="是否可见" prop="visibleFlag" v-if="form.typeFlag === 'MENU'">
+        <el-form-item label="是否可见" prop="visibleFlag" v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
           <el-switch v-model="form.visibleFlag" />
         </el-form-item>
       </el-form>
@@ -155,7 +163,8 @@ const form = ref({
   visibleFlag: true,
   keepAliveFlag: false,
   typeFlag: 'MENU',
-  permissionCode: ''
+  permissionCode: '',
+  iframeUrl: ''
 })
 
 const defaultRules = {
@@ -168,6 +177,11 @@ const computedRules = computed(() => {
       ...defaultRules,
       permissionCode: [{ required: true, message: '请输入权限标识', trigger: 'blur' }]
     }
+  } else if (form.value.typeFlag === 'IFRAME') {
+    return {
+      ...defaultRules,
+      iframeUrl: [{ required: true, message: '请输入内嵌地址', trigger: 'blur' }]
+    }
   }
   return defaultRules
 })
@@ -177,7 +191,7 @@ const handleAdd = () => {
   form.value = {
     id: null, parentId: null, name: '', path: '',
     icon: '', sortNo: 1, visibleFlag: true, keepAliveFlag: false,
-    typeFlag: 'MENU', permissionCode: ''
+    typeFlag: 'MENU', permissionCode: '', iframeUrl: ''
   }
   dialogVisible.value = true
 }
@@ -187,14 +201,14 @@ const handleAddSubMenu = (row: any) => {
   form.value = {
     id: null, parentId: row.id, name: '', path: '',
     icon: '', sortNo: 1, visibleFlag: true, keepAliveFlag: false,
-    typeFlag: 'MENU', permissionCode: ''
+    typeFlag: 'MENU', permissionCode: '', iframeUrl: ''
   }
   dialogVisible.value = true
 }
 
 const handleEdit = (row: any) => {
   dialogType.value = 'edit'
-  form.value = { ...row, typeFlag: row.typeFlag || 'MENU', permissionCode: row.permissionCode || '' }
+  form.value = { ...row, typeFlag: row.typeFlag || 'MENU', permissionCode: row.permissionCode || '', iframeUrl: row.iframeUrl || '' }
   dialogVisible.value = true
 }
 

@@ -43,4 +43,7 @@ public class SysMenu implements Serializable {
 
     @Column(name = "permission_code")
     private String permissionCode;
+
+    @Column(name = "iframe_url")
+    private String iframeUrl;
 }

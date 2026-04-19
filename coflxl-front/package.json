@@ -20,6 +20,7 @@
     "vue": "^3.5.32",
     "vue-echarts": "^7.0.3",
     "vue-router": "^5.0.4",
+    "workflow-bpmn-modeler": "^0.2.8",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

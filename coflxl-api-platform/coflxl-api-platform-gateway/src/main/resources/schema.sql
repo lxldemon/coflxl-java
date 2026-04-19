@@ -157,21 +157,21 @@ INSERT INTO sys_api_system (system_code, system_name, dev_engineer, ss_engineer)
 
 -- 迁移数据源配置
 INSERT INTO sys_api_data_source (code, name, jdbc_url, username, password_encrypted, driver_class_name, status, system_code) VALUES
-             ('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
-             ('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
-             ('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
-             ('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
-             ('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
+('db_127_mysql', '本地Mysql数据库(guanwang)', 'jdbc:mysql://127.0.0.1:3306/guanwang', 'root', '123456', 'com.mysql.cj.jdbc.Driver', 'ACTIVE', 'system_guanwang'),
+('db_csxt', '财审系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXCSXM', 'JXCSXM', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_csxt'),
+('db_jhyh', '计划养护系统数据配置', 'jdbc:oracle:thin:@36.2.6.16:1521:orcl', 'JXJHYH', 'JXJHYH', 'oracle.jdbc.driver.OracleDriver', 'ACTIVE', 'system_jhyh'),
+('db_sjzl', '数据治理与决策分析数据库配置', 'jdbc:postgresql://36.2.11.155:5432/60waternest?charSet=utf-8', 'watersys', 'watersys', 'org.postgresql.Driver', 'ACTIVE', 'system_sjzl'),
+('db_yzt', '一张图', 'jdbc:oracle:thin:@36.2.14.123:1521:uboss', 'jxjtyzt', 'jxJTyZt!^202409', 'oracle.jdbc.OracleDriver', 'ACTIVE', 'system_yzt');
 
 -- 迁移 API 定义
 INSERT INTO sys_api_definition (api_code, api_name, api_path, http_method, operation_type, execute_mode, data_source_code, status, system_code) VALUES
-                                ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
-                                ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
-                                ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
-                                ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
-                                ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-                                ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
+            ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
+            ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
+            ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
+            ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+            ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
+            ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+            ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
 
 
 -- 迁移 API SQL 定义
@@ -185,13 +185,22 @@ INSERT INTO sys_api_sql_definition (api_code, sql_text, sql_type, enabled_flag) 
 ('deleteTestLxl', 'delete from test_lxl where id in (:id)', 'DELETE', true);
 
 -- =============== RBAC ===================
-
+DROP TABLE IF EXISTS sys_dept;
+CREATE TABLE sys_dept (
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+parent_id BIGINT,
+name VARCHAR(128) NOT NULL,
+sort_no INT,
+status VARCHAR(32) DEFAULT 'ACTIVE',
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 DROP TABLE IF EXISTS sys_user;
 CREATE TABLE sys_user (
 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 username VARCHAR(64) NOT NULL UNIQUE,
 password VARCHAR(256) NOT NULL,
 nickname VARCHAR(64),
+dept_id BIGINT,
 status VARCHAR(32) DEFAULT 'ACTIVE',
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -216,7 +225,8 @@ sort_no INT,
 visible_flag BOOLEAN DEFAULT TRUE,
 keep_alive_flag BOOLEAN DEFAULT FALSE,
 type_flag VARCHAR(32) DEFAULT 'MENU',
-permission_code VARCHAR(128)
+permission_code VARCHAR(128),
+iframe_url VARCHAR(512)
 );
 
 DROP TABLE IF EXISTS sys_user_role;
@@ -257,6 +267,7 @@ INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
 (6, 1, '用户管理', '/sys-user', 'User', 5),
 (7, 1, '角色管理', '/sys-role', 'Avatar', 6),
 (8, 1, '菜单管理', '/sys-menu', 'Menu', 7),
+(9, 1, '部门管理', '/sys-dept', 'Location', 4),
 (10, NULL, 'API开放平台', '', 'Monitor', 20),
 (11, 10, 'SQL工作台', '/sql-workbench', 'DataBoard', 1),
 (12, 10, '接口管理', '/api-manage', 'Monitor', 2),
@@ -264,8 +275,77 @@ INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
 (21, 20, '报表模板管理', '/report-template', 'Tickets', 1),
 (22, 20, '报表实例管理', '/report-instance', 'DataAnalysis', 2);
 
+INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no, type_flag, permission_code) VALUES
+(101, 6, '新增用户', '', '', 1, 'BUTTON', 'sys:user:add'),
+(102, 6, '编辑用户', '', '', 2, 'BUTTON', 'sys:user:update'),
+(103, 6, '删除用户', '', '', 3, 'BUTTON', 'sys:user:delete'),
+(104, 6, '分配角色', '', '', 4, 'BUTTON', 'sys:user:assign_role'),
+(105, 6, '导出Excel', '', '', 5, 'BUTTON', 'sys:user:export'),
+(111, 7, '新增角色', '', '', 1, 'BUTTON', 'sys:role:add'),
+(112, 7, '编辑角色', '', '', 2, 'BUTTON', 'sys:role:update'),
+(113, 7, '删除角色', '', '', 3, 'BUTTON', 'sys:role:delete'),
+(114, 7, '分配菜单', '', '', 4, 'BUTTON', 'sys:role:assign_menu'),
+(115, 7, '导出Excel', '', '', 5, 'BUTTON', 'sys:role:export'),
+(121, 8, '新增菜单', '', '', 1, 'BUTTON', 'sys:menu:add'),
+(122, 8, '编辑菜单', '', '', 2, 'BUTTON', 'sys:menu:update'),
+(123, 8, '删除菜单', '', '', 3, 'BUTTON', 'sys:menu:delete'),
+(131, 3, '新增系统', '', '', 1, 'BUTTON', 'sys:dict:add'),
+(132, 3, '编辑系统', '', '', 2, 'BUTTON', 'sys:dict:update'),
+(133, 3, '删除系统', '', '', 3, 'BUTTON', 'sys:dict:delete'),
+(134, 3, '导出Excel', '', '', 4, 'BUTTON', 'sys:dict:export');
+
+CREATE TABLE sys_wf_def (
+id BIGINT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(100) NOT NULL,
+type_code VARCHAR(50) DEFAULT 'GENERAL',
+xml_data TEXT NOT NULL,
+status VARCHAR(20) DEFAULT 'ACTIVE',
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE lc_form_definition (
+id VARCHAR(64) PRIMARY KEY,
+name VARCHAR(128) NOT NULL,
+schema_json LONGTEXT
+);
+
+CREATE TABLE lc_business_instance (
+id VARCHAR(64) PRIMARY KEY,
+form_id VARCHAR(64) NOT NULL,
+proc_ins_id VARCHAR(64),
+data_content LONGTEXT,
+status VARCHAR(20) DEFAULT 'DRAFT',
+creator VARCHAR(64),
+create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE lc_audit_log (
+id VARCHAR(64) PRIMARY KEY,
+business_id VARCHAR(64) NOT NULL,
+task_id VARCHAR(64),
+task_name VARCHAR(128),
+assignee VARCHAR(64),
+action VARCHAR(20),
+comment TEXT,
+create_time DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO lc_form_definition (id, name, schema_json) VALUES
+('form_1001', '请假申请表', '[{"label":"请假天数","field":"days","type":"number"},{"label":"请假原因","field":"reason","type":"text"}]');
+
+INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
+(30, NULL, '流程管理', '', 'Connection', 40),
+(31, 30, '流程定义管理', '/workflow/def', 'EditPen', 1),
+(32, 30, '发起流程', '/workflow/start', 'Position', 2),
+(33, 30, '我的待办', '/workflow/tasks', 'List', 3);
+
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 30), (1, 31), (1, 32), (1, 33),
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8),
 (1, 10), (1, 11), (1, 12),
-(1, 20), (1, 21), (1, 22);
+(1, 20), (1, 21), (1, 22),
+(1, 101), (1, 102), (1, 103), (1, 104), (1, 105),
+(1, 111), (1, 112), (1, 113), (1, 114), (1, 115),
+(1, 121), (1, 122), (1, 123),
+(1, 131), (1, 132), (1, 133), (1, 134);
 

@@ -41,8 +41,14 @@ public class AdminRoleController {
         return ApiResponse.success(page);
     }
 
-    @PostMapping("/save")
+    @PostMapping("/save1")
     public ApiResponse<Boolean> saveRole(@RequestBody SysRole role) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        sqlToyLazyDao.saveOrUpdate(role);
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(true);
+    }@PostMapping("/save")
+    public ApiResponse<Boolean> saveRole1(@RequestBody SysRole role) {
         DynamicDataSourceContextHolder.set("PRIMARY");
         sqlToyLazyDao.saveOrUpdate(role);
         DynamicDataSourceContextHolder.clear();

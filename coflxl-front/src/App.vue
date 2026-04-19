@@ -18,7 +18,7 @@
       >
         <template v-for="menu in userMenus" :key="menu.id">
           <!-- no children -->
-          <el-menu-item v-if="!menu.children || menu.children.length === 0" :index="menu.path || String(menu.id)">
+          <el-menu-item v-if="!menu.children || menu.children.length === 0" :index="menu.typeFlag === 'IFRAME' ? `/iframe?url=${encodeURIComponent(menu.iframeUrl || '')}&title=${encodeURIComponent(menu.name)}` : (menu.path || String(menu.id))">
             <el-icon v-if="menu.icon"><component :is="Icons[menu.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
             <span>{{ menu.name }}</span>
           </el-menu-item>
@@ -29,7 +29,7 @@
               <el-icon v-if="menu.icon"><component :is="Icons[menu.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
               <span>{{ menu.name }}</span>
             </template>
-            <el-menu-item v-for="child in menu.children" :key="child.id" :index="child.path || String(child.id)">
+            <el-menu-item v-for="child in menu.children" :key="child.id" :index="child.typeFlag === 'IFRAME' ? `/iframe?url=${encodeURIComponent(child.iframeUrl || '')}&title=${encodeURIComponent(child.name)}` : (child.path || String(child.id))">
               <el-icon v-if="child.icon"><component :is="Icons[child.icon as keyof typeof Icons] || Icons.Menu" /></el-icon>
               <span>{{ child.name }}</span>
             </el-menu-item>
@@ -176,9 +176,16 @@ const routeNames: Record<string, string> = {
   'ReportDesigner': '报表设计器',
   'UserManage': '用户管理',
   'RoleManage': '角色管理',
-  'MenuManage': '菜单管理'
+  'MenuManage': '菜单管理',
+  'ProcessDesigner': '流程设计器',
+  'ProcessStart': '发起流程',
+  'WfDefManage': '流程定义管理',
+  'MyTasks': '我的待办'
 }
 const currentRouteName = computed(() => {
+  if (route.name === 'IFrameView') {
+    return route.query.title ? String(route.query.title) : '自定义页面'
+  }
   if (routeNames[route.name as string]) {
     return routeNames[route.name as string]
   }

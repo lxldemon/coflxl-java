@@ -1,40 +1,74 @@
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-sm h-full flex flex-col">
-    <ProTable ref="proTable" :columns="columns" :requestApi="getUsers">
-      <template #search="{ search, reset }">
-        <el-form :inline="true" :model="searchForm">
-          <el-form-item label="用户名">
-            <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable style="width: 200px" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="search(searchForm)">查询</el-button>
-            <el-button @click="resetForm(reset)">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </template>
+  <div class="h-full flex gap-4">
+    <!-- Left: Dept Tree -->
+    <div class="w-64 bg-white p-4 rounded-lg shadow-sm flex flex-col h-full overflow-hidden shrink-0">
+      <h3 class="text-base font-medium mb-4 text-gray-800">组织架构</h3>
+      <el-tree
+          v-loading="treeLoading"
+          :data="deptTree"
+          :props="{ label: 'name', children: 'children' }"
+          default-expand-all
+          highlight-current
+          :expand-on-click-node="false"
+          @node-click="handleDeptClick"
+          class="flex-1 overflow-auto"
+      >
+        <template #default="{ node }">
+          <span class="text-sm cursor-pointer">{{ node.label }}</span>
+        </template>
+      </el-tree>
+    </div>
 
-      <template #toolbar-left>
-        <h2 class="text-lg font-medium">用户管理</h2>
-      </template>
+    <!-- Right: User list -->
+    <div class="flex-1 bg-white p-4 rounded-lg shadow-sm h-full flex flex-col min-w-0">
+      <ProTable ref="proTable" :columns="columns" :requestApi="getUsers" :init-params="initParams">
+        <template #search="{ search, reset }">
+          <el-form :inline="true" :model="searchForm">
+            <el-form-item label="用户名">
+              <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable style="width: 200px" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="search(searchForm)">查询</el-button>
+              <el-button @click="resetForm(reset)">重置</el-button>
+              <el-button v-if="initParams.deptId" @click="clearDeptFilter(reset)">清除部门筛选</el-button>
+            </el-form-item>
+          </el-form>
+        </template>
 
-      <template #toolbar-right>
-        <el-button v-permission="'sys:user:export'" type="success" @click="exportExcel" plain>导出 Excel</el-button>
-        <el-button v-permission="'sys:user:add'" type="primary" @click="handleAdd">新增用户</el-button>
-      </template>
+        <template #toolbar-left>
+          <h2 class="text-lg font-medium">用户管理 <span v-if="selectedDeptName" class="text-sm text-gray-500 font-normal ml-2">当前部门: {{ selectedDeptName }}</span></h2>
+        </template>
 
-      <template #statusSlot="{ row }">
-        <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">{{ row.status === 'ACTIVE' ? '正常' : '禁用' }}</el-tag>
-      </template>
+        <template #toolbar-right>
+          <el-button v-permission="'sys:user:export'" type="success" @click="exportExcel" plain>导出 Excel</el-button>
+          <el-button v-permission="'sys:user:add'" type="primary" @click="handleAdd">新增用户</el-button>
+        </template>
 
-      <template #actionSlot="{ row }">
-        <el-button v-permission="'sys:user:update'" type="primary" link @click="handleEdit(row)">编辑</el-button>
-        <el-button v-permission="'sys:user:assign_role'" type="primary" link @click="handleAssignRole(row)">分配角色</el-button>
-        <el-button v-permission="'sys:user:delete'" type="danger" link @click="handleDelete(row)">删除</el-button>
-      </template>
-    </ProTable>
+        <template #statusSlot="{ row }">
+          <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">{{ row.status === 'ACTIVE' ? '正常' : '禁用' }}</el-tag>
+        </template>
+
+        <template #actionSlot="{ row }">
+          <el-button v-permission="'sys:user:update'" type="primary" link @click="handleEdit(row)">编辑</el-button>
+          <el-button v-permission="'sys:user:assign_role'" type="primary" link @click="handleAssignRole(row)">分配角色</el-button>
+          <el-button v-permission="'sys:user:delete'" type="danger" link @click="handleDelete(row)">删除</el-button>
+        </template>
+      </ProTable>
+    </div>
 
     <el-dialog :title="dialogType === 'add' ? '新增用户' : '编辑用户'" v-model="dialogVisible" width="500px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="所属部门" prop="deptId">
+          <el-tree-select
+              v-model="form.deptId"
+              :data="deptTree"
+              :props="{ label: 'name', value: 'id', children: 'children' }"
+              placeholder="请选择部门"
+              clearable
+              check-strictly
+              style="width: 100%"
+          />
+        </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" placeholder="请输入用户名" :disabled="dialogType === 'edit'" />
         </el-form-item>
@@ -83,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../utils/request'
 import ProTable from '../../components/ProTable.vue'
@@ -91,6 +125,36 @@ import * as XLSX from 'xlsx'
 
 const proTable = ref()
 const searchForm = ref({ username: '' })
+
+const initParams = reactive<any>({
+  deptId: null
+})
+
+const treeLoading = ref(false)
+const deptTree = ref<any[]>([])
+const selectedDeptName = ref('')
+
+const fetchDeptTree = async () => {
+  treeLoading.value = true
+  try {
+    const res = await request.get('/admin/sys/dept/tree')
+    deptTree.value = res as any || []
+  } finally {
+    treeLoading.value = false
+  }
+}
+
+const handleDeptClick = (data: any) => {
+  selectedDeptName.value = data.name
+  initParams.deptId = data.id
+  proTable.value?.refresh()
+}
+
+const clearDeptFilter = (resetFn: Function) => {
+  initParams.deptId = null
+  selectedDeptName.value = ''
+  resetForm(resetFn)
+}
 
 const columns = [
   { prop: 'id', label: 'ID', width: 80 },
@@ -102,7 +166,7 @@ const columns = [
 
 const exportExcel = async () => {
   try {
-    const res: any = await request.get('/admin/sys/user/page', { params: { pageNo: 1, pageSize: 10000, ...searchForm.value } })
+    const res: any = await request.get('/admin/sys/user/page', { params: { pageNo: 1, pageSize: 10000, ...searchForm.value, deptId: initParams.deptId } })
     if (!res || !res.rows || res.rows.length === 0) {
       ElMessage.warning('暂无数据可导出')
       return
@@ -138,18 +202,20 @@ const dialogType = ref('add')
 const formRef = ref()
 const form = ref({
   id: null,
+  deptId: null,
   username: '',
   nickname: '',
   password: '',
   status: 'ACTIVE'
 })
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  deptId: [{ required: true, message: '请选择归属部门', trigger: 'blur' }]
 }
 
 const handleAdd = () => {
   dialogType.value = 'add'
-  form.value = { id: null, username: '', nickname: '', password: '', status: 'ACTIVE' }
+  form.value = { id: null, deptId: initParams.deptId || null, username: '', nickname: '', password: '', status: 'ACTIVE' }
   dialogVisible.value = true
 }
 
@@ -209,5 +275,6 @@ const submitRoles = async () => {
 
 onMounted(() => {
   fetchRoles()
+  fetchDeptTree()
 })
 </script>

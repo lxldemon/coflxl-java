@@ -46,80 +46,82 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :title="dialogType === 'add' ? '新增资源' : '编辑资源'" v-model="dialogVisible" width="550px">
-      <el-form ref="formRef" :model="form" :rules="computedRules" label-width="90px">
-        <el-form-item label="资源类型">
-          <el-radio-group v-model="form.typeFlag" :disabled="dialogType === 'edit'">
-            <el-radio label="MENU">菜单目录</el-radio>
-            <el-radio label="BUTTON">操作按钮</el-radio>
-            <el-radio label="IFRAME">内嵌页面</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="上级资源">
-          <el-tree-select
-              v-model="form.parentId"
-              :data="[{ id: null, name: '独立顶级节点' }, ...menuNodesOnly]"
-              :props="{ label: 'name', value: 'id', children: 'children' }"
-              placeholder="请选择上级资源"
-              check-strictly
-              style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item :label="form.typeFlag === 'BUTTON' ? '按钮名称' : '菜单名称'" prop="name">
-          <el-input v-model="form.name" placeholder="请输入名称" />
-        </el-form-item>
+    <el-drawer :title="dialogType === 'add' ? '新增资源' : '编辑资源'" v-model="dialogVisible" size="550px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form ref="formRef" :model="form" :rules="computedRules" label-width="90px" label-position="top">
+            <el-form-item label="资源类型">
+              <el-radio-group v-model="form.typeFlag" :disabled="dialogType === 'edit'">
+                <el-radio label="MENU">菜单目录</el-radio>
+                <el-radio label="BUTTON">操作按钮</el-radio>
+                <el-radio label="IFRAME">内嵌页面</el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="上级资源">
+              <el-tree-select
+                  v-model="form.parentId"
+                  :data="[{ id: null, name: '独立顶级节点' }, ...menuNodesOnly]"
+                  :props="{ label: 'name', value: 'id', children: 'children' }"
+                  placeholder="请选择上级资源"
+                  check-strictly
+                  style="width: 100%"
+              />
+            </el-form-item>
+            <el-form-item :label="form.typeFlag === 'BUTTON' ? '按钮名称' : '菜单名称'" prop="name">
+              <el-input v-model="form.name" placeholder="请输入名称" />
+            </el-form-item>
 
-        <el-form-item label="权限标识" prop="permissionCode" v-if="form.typeFlag === 'BUTTON'">
-          <el-input v-model="form.permissionCode" placeholder="如: sys:user:add" />
-        </el-form-item>
+            <el-form-item label="权限标识" prop="permissionCode" v-if="form.typeFlag === 'BUTTON'">
+              <el-input v-model="form.permissionCode" placeholder="如: sys:user:add" />
+            </el-form-item>
 
-        <el-form-item label="内嵌地址" prop="iframeUrl" v-if="form.typeFlag === 'IFRAME'">
-          <el-input v-model="form.iframeUrl" placeholder="如: https://www.bing.com" />
-        </el-form-item>
+            <el-form-item label="内嵌地址" prop="iframeUrl" v-if="form.typeFlag === 'IFRAME'">
+              <el-input v-model="form.iframeUrl" placeholder="如: https://www.bing.com" />
+            </el-form-item>
 
-        <template v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
-          <el-form-item label="路由地址" prop="path" v-if="form.typeFlag === 'MENU'">
-            <el-input v-model="form.path" placeholder="请输入路由地址" />
-          </el-form-item>
-          <el-form-item label="图标" prop="icon">
-            <el-select
-                v-model="form.icon"
-                placeholder="请选择图标"
-                filterable
-                clearable
-                style="width: 100%"
-            >
-              <template #prefix v-if="form.icon">
-                <el-icon><component :is="Icons[form.icon]" /></el-icon>
-              </template>
-              <el-option
-                  v-for="item in iconOptions"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-              >
-                <div class="flex items-center space-x-2">
-                  <el-icon><component :is="Icons[item.value]" /></el-icon>
-                  <span>{{ item.label }}</span>
-                </div>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </template>
-        <el-form-item label="排序" prop="sortNo">
-          <el-input-number v-model="form.sortNo" :min="1" />
-        </el-form-item>
-        <el-form-item label="是否可见" prop="visibleFlag" v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
-          <el-switch v-model="form.visibleFlag" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
+            <template v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
+              <el-form-item label="路由地址" prop="path" v-if="form.typeFlag === 'MENU'">
+                <el-input v-model="form.path" placeholder="请输入路由地址" />
+              </el-form-item>
+              <el-form-item label="图标" prop="icon">
+                <el-select
+                    v-model="form.icon"
+                    placeholder="请选择图标"
+                    filterable
+                    clearable
+                    style="width: 100%"
+                >
+                  <template #prefix v-if="form.icon">
+                    <el-icon><component :is="Icons[form.icon]" /></el-icon>
+                  </template>
+                  <el-option
+                      v-for="item in iconOptions"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                  >
+                    <div class="flex items-center space-x-2">
+                      <el-icon><component :is="Icons[item.value]" /></el-icon>
+                      <span>{{ item.label }}</span>
+                    </div>
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </template>
+            <el-form-item label="排序" prop="sortNo">
+              <el-input-number v-model="form.sortNo" :min="1" />
+            </el-form-item>
+            <el-form-item label="是否可见" prop="visibleFlag" v-if="form.typeFlag === 'MENU' || form.typeFlag === 'IFRAME'">
+              <el-switch v-model="form.visibleFlag" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 

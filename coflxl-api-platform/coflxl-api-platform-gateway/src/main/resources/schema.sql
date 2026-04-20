@@ -165,13 +165,13 @@ INSERT INTO sys_api_data_source (code, name, jdbc_url, username, password_encryp
 
 -- 迁移 API 定义
 INSERT INTO sys_api_definition (api_code, api_name, api_path, http_method, operation_type, execute_mode, data_source_code, status, system_code) VALUES
-            ('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
-            ('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
-            ('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
-            ('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-            ('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
-            ('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
-            ('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
+('getYztsomething', '【公路路网-首页-固定资产投资】-统计固定资产汇总信息', '/getYztsomething', 'POST', 'QUERY', 'SINGLE', 'db_yzt', 'PUBLISHED', 'system_yzt'),
+('getUserInfo', '测试查询', '/getUserInfo', 'POST', 'QUERY', 'SINGLE', 'db_sjzl', 'PUBLISHED', 'system_sjzl'),
+('getBanner', '查询banner列表', '/getBanner', 'POST', 'QUERY', 'SINGLE', 'db_127_mysql', 'PUBLISHED', 'system_guanwang'),
+('insertTestLxl', '计划养护系统-插入测试表', '/insertTestLxl', 'POST', 'INSERT', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+('updateZjdw', '更新资金到位', '/updateZjdw', 'POST', 'UPDATE', 'SINGLE', 'db_csxt', 'PUBLISHED', 'system_csxt'),
+('getJhyhXzqh', '计划养护-获取行政区划接口', '/getJhyhXzqh', 'POST', 'QUERY', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh'),
+('deleteTestLxl', '计划养护系统删除测试', '/deleteTestLxl', 'POST', 'DELETE', 'SINGLE', 'db_jhyh', 'PUBLISHED', 'system_jhyh');
 
 
 -- 迁移 API SQL 定义
@@ -185,6 +185,7 @@ INSERT INTO sys_api_sql_definition (api_code, sql_text, sql_type, enabled_flag) 
 ('deleteTestLxl', 'delete from test_lxl where id in (:id)', 'DELETE', true);
 
 -- =============== RBAC ===================
+
 DROP TABLE IF EXISTS sys_dept;
 CREATE TABLE sys_dept (
 id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -194,6 +195,7 @@ sort_no INT,
 status VARCHAR(32) DEFAULT 'ACTIVE',
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 DROP TABLE IF EXISTS sys_user;
 CREATE TABLE sys_user (
 id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -250,7 +252,10 @@ url_pattern VARCHAR(256) NOT NULL,
 remark VARCHAR(256)
 );
 
-INSERT INTO sys_user (username, password, nickname) VALUES ('admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员');
+INSERT INTO sys_dept (id, parent_id, name, sort_no) VALUES (1, NULL, '总公司', 1);
+INSERT INTO sys_dept (id, parent_id, name, sort_no) VALUES (2, 1, '研发部', 1);
+
+INSERT INTO sys_user (id, username, password, nickname, dept_id) VALUES (1, 'admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', 1);
 INSERT INTO sys_role (code, name) VALUES ('ADMIN', '超级管理员');
 INSERT INTO sys_user_role (user_id, role_id) VALUES (1, 1);
 
@@ -337,11 +342,12 @@ INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
 (30, NULL, '流程管理', '', 'Connection', 40),
 (31, 30, '流程定义管理', '/workflow/def', 'EditPen', 1),
 (32, 30, '发起流程', '/workflow/start', 'Position', 2),
-(33, 30, '我的待办', '/workflow/tasks', 'List', 3);
+(33, 30, '我的待办', '/workflow/tasks', 'List', 3),
+(34, 30, '表单表设计', '/workflow/form', 'Document', 4);
 
 INSERT INTO sys_role_menu (role_id, menu_id) VALUES
-(1, 30), (1, 31), (1, 32), (1, 33),
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8),
+(1, 30), (1, 31), (1, 32), (1, 33), (1, 34),
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9),
 (1, 10), (1, 11), (1, 12),
 (1, 20), (1, 21), (1, 22),
 (1, 101), (1, 102), (1, 103), (1, 104), (1, 105),

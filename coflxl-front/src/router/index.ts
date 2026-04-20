@@ -23,10 +23,16 @@ import ProcessDesigner from '../views/workflow/ProcessDesigner.vue'
 import ProcessStart from '../views/workflow/ProcessStart.vue'
 import MyTasks from '../views/workflow/MyTasks.vue'
 import WfDefManage from '../views/workflow/WfDefManage.vue'
+import FormManage from '../views/workflow/FormManage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/workflow/form',
+      name: 'FormManage',
+      component: FormManage
+    },
     {
       path: '/workflow/def',
       name: 'WfDefManage',

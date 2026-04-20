@@ -214,23 +214,23 @@ public class WorkflowController {
 
         // 获取用户所属的角色/部门(作为组)
         String groupSql = "select r.code from sys_role r join sys_user_role ur on r.id = ur.role_id where ur.user_id = :userId " +
-                "union select cast(dept_id as char) from sys_user where id = :userId";
+                "union select     CONCAT(dept_id, '')  from sys_user where id = :userId";
         java.util.Map<String, Object> groupParams = new java.util.HashMap<>();
         groupParams.put("userId", userId);
         List<String> userGroups = sqlToyLazyDao.findBySql(groupSql, groupParams, String.class);
         if (userGroups == null) userGroups = new java.util.ArrayList<>();
 
         // 联合查询 Flowable 原生表和 lc_business_instance 业务表
-        String sql = "select t.ID_ as taskId, t.NAME_ as taskName, 'PENDING' as taskStatus, t.CREATE_TIME_ as taskTime, " +
-                "b.id as businessId, b.data_content as dataContent, b.form_id as formId, fd.name as formName, u.username as starterName " +
+        String sql = "select t.ID_ as taskId, t.NAME_ as taskName, 'PENDING' as taskStatus, t.CREATE_TIME_ as taskTime, t.ASSIGNEE_ as assignee, " +
+                "b.id as businessId, b.data_content as dataContent, b.form_id as formId, fd.name as formName, fd.schema_json as schemaJson, u.username as starterName " +
                 "from ACT_RU_TASK t " +
-                "JOIN ACT_RU_EXECUTION e ON t.PROC_INST_ID_ = e.PROC_INST_ID_ AND e.PARENT_ID_ IS NULL " +
+                "JOIN ACT_RU_EXECUTION e ON t.PROC_INST_ID_ = e.ID_ " +
                 "join lc_business_instance b on e.BUSINESS_KEY_ = b.id " +
                 "left join lc_form_definition fd on b.form_id = fd.id " +
-                "left join sys_user u on b.creator = cast(u.id as char) " +
+                "left join sys_user u on b.creator = CONCAT(u.id, '')  " +
                 "where (t.ASSIGNEE_ = :userIdStr " +
-                "  or exists (select 1 from ACT_RU_IDENTITYLINK l where l.TASK_ID_ = t.ID_ and l.TYPE_ = 'candidate' and l.USER_ID_ = :userIdStr) " +
-                "  #[or exists (select 1 from ACT_RU_IDENTITYLINK l where l.TASK_ID_ = t.ID_ and l.TYPE_ = 'candidate' and l.GROUP_ID_ in (:userGroups))] " +
+                "  or exists (select 1 from ACT_RU_IDENTITYLINK l where l.TASK_ID_ = t.ID_ and l.TYPE_ = 'candidate' and (l.USER_ID_ = :userIdStr " +
+                "  #[or l.GROUP_ID_ in (:userGroups)])) " +
                 ") " +
                 "#[and t.NAME_ like :taskName] " +
                 "order by t.CREATE_TIME_ desc";
@@ -365,6 +365,22 @@ public class WorkflowController {
         List result = sqlToyLazyDao.findBySql(sql, null, Map.class);
         DynamicDataSourceContextHolder.clear();
         return ApiResponse.success(result);
+    }
+
+    @PostMapping("/form/save")
+    public ApiResponse<Void> saveForm(@RequestBody LcFormDefinition form) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        sqlToyLazyDao.saveOrUpdate(form);
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/form/delete/{id}")
+    public ApiResponse<Void> deleteForm(@PathVariable String id) {
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        sqlToyLazyDao.deleteByIds(LcFormDefinition.class, id);
+        DynamicDataSourceContextHolder.clear();
+        return ApiResponse.success(null);
     }
 
     // 11. 流程流转审计日志

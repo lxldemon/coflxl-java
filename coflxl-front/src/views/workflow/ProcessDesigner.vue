@@ -40,6 +40,7 @@ const defName = ref('')
 const typeCode = ref('')
 const users = ref<any[]>([])
 const groups = ref<any[]>([]) // 1. 定义变量
+const forms = ref<any[]>([])
 
 const initialXml = ref('')
 const dataReady = ref(false)
@@ -59,6 +60,14 @@ const loadRoles = async () => {
   groups.value = res || []
 }
 
+const loadForms = async () => {
+  const res: any = await request.get('/admin/wf/form/list')
+  forms.value = (res || []).map((f: any) => ({
+    name: `${f.name}`,
+    id: String(f.id)
+  }))
+}
+
 
 const onIframeLoad = () => {
   if (!myFrame.value) return
@@ -66,11 +75,7 @@ const onIframeLoad = () => {
     xml: initialXml.value, // 后端查询到的xml，新建则为空串
     users: JSON.parse(JSON.stringify(users.value)), // 👈 深度拷贝去除 Vue Proxy 特性，防止 postMessage 克隆报错
     groups: JSON.parse(JSON.stringify(groups.value)), // 使用动态加载的数据
-    categorys: [
-      { name: "请假", id: "LEAVE" },
-      { name: "报销", id: "EXPENSE" },
-      { name: "通用", id: "GENERAL" }
-    ],
+    categorys: JSON.parse(JSON.stringify(forms.value.length ? forms.value : [{ name: "基础通用", id: "GENERAL" }])),
     isView: false
   }
   // 给 iframe 发送初始化消息
@@ -106,6 +111,7 @@ const handleMessage = async (event: MessageEvent) => {
 onMounted(async () => {
   await loadUsers()
   await loadRoles() // 记得调用
+  await loadForms()
 
   if (route.query.id) {
     const res: any = await request.get(`/admin/wf/def/detail/${route.query.id}`)

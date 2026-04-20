@@ -26,42 +26,48 @@
       </el-table-column>
     </el-table>
 
-    <!-- 弹窗 -->
-    <el-dialog
+    <!-- 侧边抽屉 -->
+    <el-drawer
         :title="dialogTitle"
         v-model="dialogVisible"
-        width="500px"
+        size="450px"
+        direction="rtl"
         @closed="resetForm"
     >
-      <el-form
-          ref="formRef"
-          :model="form"
-          :rules="rules"
-          label-width="100px"
-      >
-        <el-form-item label="父级部门" prop="parentId">
-          <el-tree-select
-              v-model="form.parentId"
-              :data="[{ id: null, name: '作为顶级部门' }, ...tableData]"
-              :props="{ label: 'name', value: 'id', children: 'children' }"
-              placeholder="请选择父级部门"
-              clearable
-              check-strictly
-              style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="部门名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入部门名称" />
-        </el-form-item>
-        <el-form-item label="显示排序" prop="sortNo">
-          <el-input-number v-model="form.sortNo" :min="1" controls-position="right" style="width: 100%" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitForm" :loading="submitting">确定</el-button>
-      </template>
-    </el-dialog>
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              label-width="100px"
+              label-position="top"
+          >
+            <el-form-item label="父级部门" prop="parentId">
+              <el-tree-select
+                  v-model="form.parentId"
+                  :data="[{ id: null, name: '作为顶级部门' }, ...tableData]"
+                  :props="{ label: 'name', value: 'id', children: 'children' }"
+                  placeholder="请选择父级部门"
+                  clearable
+                  check-strictly
+                  style="width: 100%"
+              />
+            </el-form-item>
+            <el-form-item label="部门名称" prop="name">
+              <el-input v-model="form.name" placeholder="请输入部门名称" />
+            </el-form-item>
+            <el-form-item label="显示排序" prop="sortNo">
+              <el-input-number v-model="form.sortNo" :min="1" controls-position="right" style="width: 100%" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm" :loading="submitting">确定</el-button>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 

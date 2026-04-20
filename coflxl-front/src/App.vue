@@ -180,6 +180,7 @@ const routeNames: Record<string, string> = {
   'ProcessDesigner': '流程设计器',
   'ProcessStart': '发起流程',
   'WfDefManage': '流程定义管理',
+  'FormManage': '发起流程表单设计',
   'MyTasks': '我的待办'
 }
 const currentRouteName = computed(() => {

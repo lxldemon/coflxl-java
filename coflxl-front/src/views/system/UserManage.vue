@@ -56,63 +56,67 @@
       </ProTable>
     </div>
 
-    <el-dialog :title="dialogType === 'add' ? '新增用户' : '编辑用户'" v-model="dialogVisible" width="500px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="所属部门" prop="deptId">
-          <el-tree-select
-              v-model="form.deptId"
-              :data="deptTree"
-              :props="{ label: 'name', value: 'id', children: 'children' }"
-              placeholder="请选择部门"
-              clearable
-              check-strictly
-              style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" :disabled="dialogType === 'edit'" />
-        </el-form-item>
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="form.nickname" placeholder="请输入昵称" />
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码(不修改请留空)" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio label="ACTIVE">正常</el-radio>
-            <el-radio label="INACTIVE">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
+    <el-drawer :title="dialogType === 'add' ? '新增用户' : '编辑用户'" v-model="dialogVisible" size="500px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form ref="formRef" :model="form" :rules="rules" label-width="80px" label-position="top">
+            <el-form-item label="所属部门" prop="deptId">
+              <el-tree-select
+                  v-model="form.deptId"
+                  :data="deptTree"
+                  :props="{ label: 'name', value: 'id', children: 'children' }"
+                  placeholder="请选择部门"
+                  clearable
+                  check-strictly
+                  style="width: 100%"
+              />
+            </el-form-item>
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="form.username" placeholder="请输入用户名" :disabled="dialogType === 'edit'" />
+            </el-form-item>
+            <el-form-item label="昵称" prop="nickname">
+              <el-input v-model="form.nickname" placeholder="请输入昵称" />
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+              <el-input v-model="form.password" type="password" placeholder="请输入密码(不修改请留空)" />
+            </el-form-item>
+            <el-form-item label="状态" prop="status">
+              <el-radio-group v-model="form.status">
+                <el-radio label="ACTIVE">正常</el-radio>
+                <el-radio label="INACTIVE">禁用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+        </div>
+      </div>
+    </el-drawer>
 
-    <el-dialog v-model="roleDialogVisible" title="分配角色" width="400px">
-      <el-form>
-        <el-form-item label="选择角色">
-          <el-select v-model="selectedRoleIds" multiple placeholder="请选择角色" style="width: 100%">
-            <el-option
-                v-for="item in allRoles"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
+    <el-drawer v-model="roleDialogVisible" title="分配角色" size="400px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form label-position="top">
+            <el-form-item label="选择角色">
+              <el-select v-model="selectedRoleIds" multiple placeholder="请选择角色" style="width: 100%">
+                <el-option
+                    v-for="item in allRoles"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
           <el-button @click="roleDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitRoles">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 

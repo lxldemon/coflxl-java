@@ -11,7 +11,7 @@ public class LcBusinessInstance implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
+    @Id(strategy = "identity")
     @Column(name = "id", length = 64)
     private String id;
 

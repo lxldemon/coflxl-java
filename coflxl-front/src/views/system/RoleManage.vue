@@ -33,46 +33,49 @@
       </template>
     </ProTable>
 
-    <el-dialog :title="dialogType === 'add' ? '新增角色' : '编辑角色'" v-model="dialogVisible" width="500px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="角色编码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入角色编码" :disabled="dialogType === 'edit'" />
-        </el-form-item>
-        <el-form-item label="角色名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入角色名称" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio label="ACTIVE">正常</el-radio>
-            <el-radio label="INACTIVE">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
+    <el-drawer :title="dialogType === 'add' ? '新增角色' : '编辑角色'" v-model="dialogVisible" size="500px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form ref="formRef" :model="form" :rules="rules" label-width="80px" label-position="top">
+            <el-form-item label="角色编码" prop="code">
+              <el-input v-model="form.code" placeholder="请输入角色编码" :disabled="dialogType === 'edit'" />
+            </el-form-item>
+            <el-form-item label="角色名称" prop="name">
+              <el-input v-model="form.name" placeholder="请输入角色名称" />
+            </el-form-item>
+            <el-form-item label="状态" prop="status">
+              <el-radio-group v-model="form.status">
+                <el-radio label="ACTIVE">正常</el-radio>
+                <el-radio label="INACTIVE">禁用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="menuDialogVisible" title="分配菜单" width="500px">
-      <div style="height: 400px; overflow-y: auto;">
-        <el-tree
-            ref="menuTree"
-            :data="allMenus"
-            show-checkbox
-            node-key="id"
-            :props="{ label: 'name', children: 'children' }"
-        />
+        </div>
       </div>
-      <template #footer>
-        <span class="dialog-footer">
+    </el-drawer>
+
+    <el-drawer v-model="menuDialogVisible" title="分配菜单" size="500px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-tree
+              ref="menuTree"
+              :data="allMenus"
+              show-checkbox
+              node-key="id"
+              :props="{ label: 'name', children: 'children' }"
+              class="mt-2"
+          />
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
           <el-button @click="menuDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitMenus">确定</el-button>
-        </span>
-      </template>
-    </el-dialog>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 

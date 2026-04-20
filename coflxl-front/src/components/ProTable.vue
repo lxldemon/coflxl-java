@@ -57,14 +57,14 @@ const loading = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const pageParams = reactive({ pageNo: 1, pageSize: 10 })
-const searchParams = ref({ ...props.initParams })
+const searchParams = ref({})
 
 const fetchData = async () => {
   loading.value = true
   try {
     const params = props.showPagination
-        ? { ...pageParams, ...searchParams.value }
-        : { ...searchParams.value }
+        ? { ...pageParams, ...props.initParams, ...searchParams.value }
+        : { ...props.initParams, ...searchParams.value }
 
     const res: any = await props.requestApi(params)
     if (props.showPagination) {
@@ -81,13 +81,13 @@ const fetchData = async () => {
 }
 
 const search = (params: any) => {
-  searchParams.value = { ...props.initParams, ...params }
+  searchParams.value = { ...params }
   pageParams.pageNo = 1
   fetchData()
 }
 
 const reset = () => {
-  searchParams.value = { ...props.initParams }
+  searchParams.value = {}
   pageParams.pageNo = 1
   fetchData()
 }

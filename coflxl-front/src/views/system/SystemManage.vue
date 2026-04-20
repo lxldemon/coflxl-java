@@ -42,29 +42,33 @@
       </template>
     </ProTable>
 
-    <el-dialog :title="isEdit ? '编辑系统' : '新增系统'" v-model="dialogVisible" width="600px">
-      <el-form :model="form" label-width="100px">
-        <el-form-item label="系统编码" required>
-          <el-input v-model="form.systemCode" :disabled="isEdit" placeholder="例如: system_csxt" />
-        </el-form-item>
-        <el-form-item label="系统名称" required>
-          <el-input v-model="form.systemName" placeholder="例如: 财审项目" />
-        </el-form-item>
-        <el-form-item label="开发工程师">
-          <el-input v-model="form.devEngineer" placeholder="请输入开发工程师姓名" />
-        </el-form-item>
-        <el-form-item label="实施工程师">
-          <el-input v-model="form.ssEngineer" placeholder="请输入实施工程师姓名" />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveSystem" :loading="saving">确定</el-button>
-      </template>
-    </el-dialog>
+    <el-drawer :title="isEdit ? '编辑系统' : '新增系统'" v-model="dialogVisible" size="500px" direction="rtl">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <el-form :model="form" label-width="100px" label-position="top">
+            <el-form-item label="系统编码" required>
+              <el-input v-model="form.systemCode" :disabled="isEdit" placeholder="例如: system_csxt" />
+            </el-form-item>
+            <el-form-item label="系统名称" required>
+              <el-input v-model="form.systemName" placeholder="例如: 财审项目" />
+            </el-form-item>
+            <el-form-item label="开发工程师">
+              <el-input v-model="form.devEngineer" placeholder="请输入开发工程师姓名" />
+            </el-form-item>
+            <el-form-item label="实施工程师">
+              <el-input v-model="form.ssEngineer" placeholder="请输入实施工程师姓名" />
+            </el-form-item>
+            <el-form-item label="备注">
+              <el-input v-model="form.remark" type="textarea" />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveSystem" :loading="saving">确定</el-button>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 

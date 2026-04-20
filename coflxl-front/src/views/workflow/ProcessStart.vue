@@ -35,56 +35,59 @@
       <template #action="{ row }">
         <el-button link type="primary" @click="viewProcess(row)">查看执行图</el-button>
         <el-button link type="info" @click="viewAudit(row)">审批轨迹</el-button>
+        <el-button v-if="row.status === 'REJECTED' || row.status === 'DRAFT'" link type="warning" @click="handleResubmit(row)">重新编辑/发起</el-button>
       </template>
     </ProTable>
 
-    <!-- 发起流程 Dialog -->
-    <el-dialog title="发起流程单" v-model="dialogVisible" width="550px" @closed="closeDialog">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
-        <el-form-item label="所属流程" prop="defId">
-          <el-select v-model="form.defId" placeholder="挂靠流程引擎模板" style="width: 100%">
-            <el-option
-                v-for="def in activeDefs"
-                :key="def.id"
-                :label="def.name + (def.typeCode ? (' - [' + def.typeCode + ']') : '')"
-                :value="def.id"
-            />
-          </el-select>
-        </el-form-item>
+    <!-- 发起流程 Drawer -->
+    <el-drawer title="发起流程单" v-model="dialogVisible" size="650px" direction="rtl" @closed="closeDialog">
+      <div class="flex flex-col h-full -mx-4 -my-4 p-4">
+        <div class="flex-1 overflow-auto pr-2 pb-4">
+          <h3 class="text-sm font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-2">基础信息配置</h3>
+          <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" label-position="top" class="px-2">
+            <el-row :gutter="20">
+              <el-col :span="24">
+                <el-form-item label="所属流程" prop="defId">
+                  <el-select v-model="form.defId" placeholder="选择要发起的流程定义" style="width: 100%" @change="onDefChange">
+                    <el-option
+                        v-for="def in activeDefs"
+                        :key="def.id"
+                        :label="def.name"
+                        :value="def.id"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
 
-        <el-form-item label="表单类型" prop="formId">
-          <el-select v-model="form.formId" placeholder="选择业务数据表单" style="width: 100%" @change="onFormChange">
-            <el-option
-                v-for="f in formDefs"
-                :key="f.id"
-                :label="f.name"
-                :value="f.id"
-            />
-          </el-select>
-        </el-form-item>
-
-        <!-- Dynamic Form Fields -->
-        <div v-if="activeSchema.length > 0" class="mt-4 p-4 bg-gray-50 rounded-md">
-          <h3 class="text-sm font-medium text-gray-500 mb-4 pb-2 border-b">动态业务字段</h3>
-          <el-form-item
-              v-for="field in activeSchema"
-              :key="field.field"
-              :label="field.label"
-              :prop="'dynamicData.' + field.field"
-              :rules="{ required: true, message: '此项必填', trigger: 'blur' }"
-          >
-            <el-input v-if="field.type === 'text'" v-model="form.dynamicData[field.field]" :placeholder="'请输入' + field.label" />
-            <el-input-number v-else-if="field.type === 'number'" v-model="form.dynamicData[field.field]" controls-position="right" class="w-full" />
-            <el-date-picker v-else-if="field.type === 'date'" v-model="form.dynamicData[field.field]" type="date" value-format="YYYY-MM-DD" class="w-full !flex" />
-            <el-input v-else v-model="form.dynamicData[field.field]" />
-          </el-form-item>
+            <!-- Dynamic Form Fields -->
+            <template v-if="activeSchema.length > 0">
+              <h3 class="text-sm font-bold text-gray-800 mt-2 mb-4 border-l-4 border-blue-500 pl-2">动态业务字段</h3>
+              <div class="p-4 bg-gray-50 rounded-md border border-gray-100">
+                <el-form-item
+                    v-for="field in activeSchema"
+                    :key="field.field"
+                    :label="field.label"
+                    :prop="'dynamicData.' + field.field"
+                    :rules="{ required: true, message: '此项必填', trigger: 'blur' }"
+                >
+                  <el-input v-if="field.type === 'text'" v-model="form.dynamicData[field.field]" :placeholder="'请输入' + field.label" />
+                  <el-input-number v-else-if="field.type === 'number'" v-model="form.dynamicData[field.field]" controls-position="right" class="w-full" />
+                  <el-date-picker v-else-if="field.type === 'date'" v-model="form.dynamicData[field.field]" type="date" value-format="YYYY-MM-DD" class="w-full !flex" />
+                  <el-input v-else v-model="form.dynamicData[field.field]" />
+                </el-form-item>
+              </div>
+            </template>
+            <el-empty v-else description="请先选择需要发起的业务表单" :image-size="80" class="mt-4 bg-gray-50 rounded-md border border-gray-100"></el-empty>
+          </el-form>
         </div>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitRequest" :loading="submitting">确认发起</el-button>
-      </template>
-    </el-dialog>
+
+        <div class="pt-4 border-t flex justify-end shrink-0 gap-3">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitRequest" :loading="submitting">确认发起</el-button>
+        </div>
+      </div>
+    </el-drawer>
 
     <!-- 流转图 Dialog -->
     <el-dialog title="流程在线轨迹图" v-model="mapVisible" width="800px" destroy-on-close>
@@ -134,11 +137,11 @@ const searchParams = reactive({
 const initParams = {}
 
 const columns = [
-  { prop: 'businessId', label: '业务单号', width: 280 },
-  { prop: 'formName', label: '表单名称', width: 140 },
-  { prop: 'createTime', label: '申请时间', width: 180, slotName: 'createTime' },
+  { prop: 'businessId', label: '业务单号', minWidth: 260 },
+  { prop: 'formName', label: '表单名称', minWidth: 140 },
+  { prop: 'createTime', label: '申请时间', minWidth: 170, slotName: 'createTime' },
   { prop: 'status', label: '实例状态', width: 120, slotName: 'status' },
-  { prop: 'action', label: '追踪 / 日志', minWidth: 200, slotName: 'action' }
+  { prop: 'action', label: '追踪 / 日志', minWidth: 300, slotName: 'action' }
 ]
 
 const requestApi = async (params: any) => {
@@ -165,8 +168,7 @@ const form = ref<any>({
 const activeSchema = ref<any[]>([])
 
 const rules = {
-  defId: [{ required: true, message: '请选择流程模型', trigger: 'change' }],
-  formId: [{ required: true, message: '请选择业务表单结构', trigger: 'change' }]
+  defId: [{ required: true, message: '请选择流程模型', trigger: 'change' }]
 }
 
 const loadActiveDefs = async () => {
@@ -181,6 +183,40 @@ const openDialog = () => {
   loadActiveDefs()
   form.value = { defId: null, formId: null, dynamicData: {} }
   activeSchema.value = []
+}
+
+const onDefChange = (val: string | number) => {
+  const def = activeDefs.value.find(d => d.id === val)
+  if (def && def.typeCode) {
+    form.value.formId = def.typeCode
+    onFormChange(def.typeCode)
+  } else {
+    form.value.formId = null
+    form.value.dynamicData = {}
+    activeSchema.value = []
+  }
+}
+
+const handleResubmit = async (row: any) => {
+  await loadActiveDefs()
+  form.value = { defId: null, formId: row.formId, dynamicData: {} }
+
+  // Re-trigger schema loading parsing
+  const match = formDefs.value.find(f => f.id === row.formId)
+  if (match && match.schemaJson) {
+    try { activeSchema.value = JSON.parse(match.schemaJson) } catch(e) { activeSchema.value = [] }
+  } else {
+    activeSchema.value = []
+  }
+
+  // Pre-fill data
+  if (row.dataContent) {
+    try {
+      const parsed = typeof row.dataContent === 'string' ? JSON.parse(row.dataContent) : row.dataContent
+      form.value.dynamicData = { ...parsed }
+    } catch(e) {}
+  }
+  dialogVisible.value = true
 }
 
 const onFormChange = (val: string) => {

@@ -186,7 +186,7 @@ const openDialog = () => {
 }
 
 const onDefChange = (val: string | number) => {
-  const def = activeDefs.value.find(d => d.id === val)
+  const def = activeDefs.value.find(d => String(d.id) === String(val))
   if (def && def.typeCode) {
     form.value.formId = def.typeCode
     onFormChange(def.typeCode)
@@ -221,7 +221,7 @@ const handleResubmit = async (row: any) => {
 
 const onFormChange = (val: string) => {
   form.value.dynamicData = {}
-  const match = formDefs.value.find(f => f.id === val)
+  const match = formDefs.value.find(f => String(f.id) === String(val))
   if (match && match.schemaJson) {
     try {
       activeSchema.value = JSON.parse(match.schemaJson)

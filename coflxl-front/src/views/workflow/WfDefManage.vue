@@ -6,8 +6,15 @@
           <el-form-item label="流程名称">
             <el-input v-model="searchParams.name" placeholder="名称模糊查询" clearable />
           </el-form-item>
-          <el-form-item label="业务类型">
-            <el-input v-model="searchParams.typeCode" placeholder="如 LEAVE" clearable />
+          <el-form-item label="绑定表单">
+            <el-select v-model="searchParams.typeCode" placeholder="请选择绑定表单" clearable style="width: 180px">
+              <el-option
+                  v-for="f in formDefs"
+                  :key="f.id"
+                  :label="f.name"
+                  :value="f.id"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="search(searchParams)">查询</el-button>
@@ -27,6 +34,11 @@
         <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'">
           {{ row.status === 'ACTIVE' ? '已发布' : '草稿' }}
         </el-tag>
+      </template>
+
+      <template #formName="{ row }">
+        <el-tag v-if="row.formName" type="primary" plain>{{ row.formName }}</el-tag>
+        <span v-else class="text-gray-400">无绑定</span>
       </template>
 
       <template #createdAt="{ row }">
@@ -49,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../utils/request'
@@ -63,15 +75,17 @@ const searchParams = reactive({
   typeCode: ''
 })
 
+const formDefs = ref<any[]>([])
+
 const initParams = {}
 
 const columns = [
   { prop: 'id', label: 'ID', width: 80 },
-  { prop: 'name', label: '流程名称' },
-  { prop: 'typeCode', label: '业务类型编码', width: 150 },
+  { prop: 'name', label: '流程模型名称' },
+  { prop: 'formName', label: '绑定的表单', width: 200, slotName: 'formName' },
   { prop: 'status', label: '状态', width: 100, slotName: 'status' },
   { prop: 'createdAt', label: '创建时间', width: 180, slotName: 'createdAt' },
-  { label: '操作', width: 250, fixed: 'right', slotName: 'action' }
+  { label: '操作', width: 200, fixed: 'right', slotName: 'action' }
 ]
 
 const requestApi = async (params: any) => {
@@ -113,4 +127,9 @@ const handleDelete = (row: any) => {
     proTableRef.value?.refresh()
   }).catch(() => {})
 }
+
+onMounted(async () => {
+  const res2 = await request.get('/admin/wf/form/list')
+  formDefs.value = (res2 || []) as any
+})
 </script>

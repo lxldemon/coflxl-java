@@ -42,25 +42,26 @@ public class WorkflowController {
     private HistoryService historyService;
     // 1. 获取流程定义列表
     @GetMapping("/def/list")
-    public ApiResponse<Page<SysWfDef>> listDefs(
+    public ApiResponse<Page<Map>> listDefs(
             @RequestParam(defaultValue = "1") Long pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String typeCode
     ) {
-        org.sagacity.sqltoy.model.Page<SysWfDef> page = new org.sagacity.sqltoy.model.Page<>();
+        org.sagacity.sqltoy.model.Page<Map> page = new org.sagacity.sqltoy.model.Page<>();
         page.setPageNo(pageNo);
         page.setPageSize(pageSize);
         DynamicDataSourceContextHolder.set("PRIMARY");
-        String sql = "select id, name, type_code as typeCode, status, created_at as createdAt from sys_wf_def " +
+        String sql = "select d.id, d.name, d.type_code as typeCode, f.name as formName, d.status, d.created_at as createdAt from sys_wf_def d " +
+                "left join lc_form_definition f on d.type_code = f.id " +
                 "where 1=1 " +
-                "#[and name like :name] " +
-                "#[and type_code = :typeCode] " +
-                "order by id desc";
+                "#[and d.name like :name] " +
+                "#[and d.type_code = :typeCode] " +
+                "order by d.id desc";
         java.util.Map<String, Object> params = new java.util.HashMap<>();
         params.put("name", org.springframework.util.StringUtils.hasText(name) ? "%" + name.trim() + "%" : null);
         params.put("typeCode", org.springframework.util.StringUtils.hasText(typeCode) ? typeCode.trim() : null);
-        page = sqlToyLazyDao.findPageBySql(page, sql, params, SysWfDef.class);
+        page = sqlToyLazyDao.findPageBySql(page, sql, params, Map.class);
         DynamicDataSourceContextHolder.clear();
         return ApiResponse.success(page);
     }

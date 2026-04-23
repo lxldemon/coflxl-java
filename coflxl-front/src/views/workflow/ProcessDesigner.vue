@@ -2,12 +2,6 @@
   <div class="h-full bg-white flex flex-col p-4 rounded-lg shadow-sm relative">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-lg font-medium">流程设计器 <span class="text-xs text-gray-500 ml-2">(请点击画布右上方的 💾 按钮保存流程)</span></h2>
-      <div class="space-x-3 flex items-center">
-        <span class="text-sm text-gray-600 font-medium">流程名称:</span>
-        <el-input v-model="defName" placeholder="如: 请假流转" style="width: 200px" />
-        <span class="text-sm text-gray-600 font-medium">业务类型:</span>
-        <el-input v-model="typeCode" placeholder="如: LEAVE" style="width: 140px" />
-      </div>
     </div>
 
     <div class="flex-1 relative border rounded overflow-hidden flex bg-gray-50">
@@ -36,8 +30,6 @@ import request from '../../utils/request'
 const route = useRoute()
 const myFrame = ref<HTMLIFrameElement | null>(null)
 
-const defName = ref('')
-const typeCode = ref('')
 const users = ref<any[]>([])
 const groups = ref<any[]>([]) // 1. 定义变量
 const forms = ref<any[]>([])
@@ -87,8 +79,8 @@ const handleMessage = async (event: MessageEvent) => {
   if (event.data && event.data.xml) {
     const { xml, process } = event.data
 
-    const finalName = defName.value.trim() || process?.name || '未命名流程定义'
-    const finalTypeCode = typeCode.value.trim() || process?.category || 'GENERAL'
+    const finalName = process?.name || '未命名流程定义'
+    const finalTypeCode = process?.category || 'GENERAL'
 
     try {
       await request.post('/admin/wf/def/save', {
@@ -98,10 +90,6 @@ const handleMessage = async (event: MessageEvent) => {
         xmlData: xml
       })
       ElMessage.success('流程流转图保存并部署成功！')
-
-      // 回写双向绑定
-      defName.value = finalName
-      typeCode.value = finalTypeCode
     } catch(e) {
       ElMessage.error('流程部署失败')
     }
@@ -117,8 +105,6 @@ onMounted(async () => {
     const res: any = await request.get(`/admin/wf/def/detail/${route.query.id}`)
     if (res && res.xmlData) {
       initialXml.value = res.xmlData
-      defName.value = res.name || ''
-      typeCode.value = res.typeCode || ''
     }
   } else {
     initialXml.value = ''

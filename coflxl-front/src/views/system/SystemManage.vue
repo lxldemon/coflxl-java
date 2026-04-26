@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white p-6 rounded-lg shadow-sm h-full flex flex-col">
+  <div class="theme-card h-full rounded-lg p-6 shadow-sm flex flex-col">
     <ProTable
         ref="proTable"
         :request-api="getSystems"
@@ -21,7 +21,7 @@
       </template>
 
       <template #toolbar-left>
-        <h2 class="text-lg font-medium">系统管理</h2>
+        <h2 class="theme-title text-lg font-medium">系统管理</h2>
       </template>
       <template #toolbar-right>
         <el-button v-permission="'sys:dict:export'" type="success" @click="exportExcel" plain>导出 Excel</el-button>

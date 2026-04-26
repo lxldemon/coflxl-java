@@ -1,7 +1,7 @@
 <template>
   <div class="pro-table flex flex-col h-full">
     <!-- Search Area -->
-    <div class="search-area mb-4 p-4 bg-gray-50 rounded-md border border-gray-100 shrink-0" v-if="$slots.search">
+    <div class="search-area theme-subcard mb-4 shrink-0 rounded-md p-4" v-if="$slots.search">
       <slot name="search" :search="search" :reset="reset"></slot>
     </div>
 

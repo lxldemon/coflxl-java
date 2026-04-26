@@ -14,6 +14,10 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 app.use(router)
-app.use(ElementPlus)
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 app.directive('permission', permission)
 app.mount('#root')

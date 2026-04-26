@@ -4,7 +4,10 @@
       "Bash(git add:*)",
       "Bash(git commit -m ' *)",
       "Bash(C:\\\\Users\\\\liu\\\\.claude\\\\plugins\\\\cache\\\\claude-plugins-official\\\\superpowers\\\\5.0.7\\\\scripts\\\\start-server.sh *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npm *)",
+      "Bash(curl -sSf \"http://127.0.0.1:3000/login\")",
+      "WebSearch"
     ]
   }
 }

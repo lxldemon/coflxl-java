@@ -37,7 +37,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (whitelist != null) {
             for (Map map : whitelist) {
                 String pattern = (String) map.get("urlPattern");
-                if (pathMatcher.match(pattern, requestURI)) {
+                if (pattern != null && pathMatcher.match(pattern, requestURI)) {
                     return true;
                 }
             }
@@ -67,9 +67,16 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // Put user info into request attribute for later use if needed
         request.setAttribute("userId", jwt.getClaim("userId").asLong());
-        request.setAttribute("username", jwt.getClaim("username").asString());
+        String username = jwt.getClaim("username").asString();
+        request.setAttribute("username", username);
+        com.coflxl.api.common.context.UserContextHolder.setUsername(username);
 
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        com.coflxl.api.common.context.UserContextHolder.clear();
     }
 
     private void returnError(HttpServletResponse response, int code, String msg) throws Exception {

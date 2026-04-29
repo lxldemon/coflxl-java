@@ -1,5 +1,6 @@
 package com.coflxl.api.admin.controller.auth;
 
+import com.coflxl.api.admin.annotation.OperLog;
 import com.coflxl.api.common.response.ApiResponse;
 import com.coflxl.api.common.utils.JwtUtil;
 import com.coflxl.api.core.datasource.DynamicDataSourceContextHolder;
@@ -18,6 +19,7 @@ public class AuthController {
     @Autowired
     private SqlToyLazyDao sqlToyLazyDao;
 
+    @OperLog(title = "登录日志", businessType = "LOGIN")
     @PostMapping("/login")
     public ApiResponse<Map<String, Object>> login(@RequestBody Map<String, String> loginParam) {
         String username = loginParam.get("username");
@@ -74,11 +76,13 @@ public class AuthController {
         return ApiResponse.success(userInfo);
     }
 
+    @OperLog(title = "登录日志", businessType = "LOGOUT")
     @PostMapping("/logout")
     public ApiResponse<Boolean> logout() {
         return ApiResponse.success(true);
     }
 
+    @OperLog(title = "个人信息", businessType = "UPDATE_PWD")
     @PostMapping("/updatePwd")
     public ApiResponse<Boolean> updatePwd(@RequestBody Map<String, String> pwdParam, @RequestHeader(value = "Authorization", required = false) String token) {
         if (token != null && (token.startsWith("Bearer ") || token.startsWith("bearer "))) {

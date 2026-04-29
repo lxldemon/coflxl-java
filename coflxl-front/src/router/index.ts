@@ -5,6 +5,7 @@ import CallLog from '../views/system/CallLog.vue'
 import Login from '../views/Login.vue'
 import SqlWorkbench from '../views/api/SqlWorkbench.vue'
 import CodeGen from '../views/system/CodeGen.vue'
+import OperLog from '../views/system/OperLog.vue'
 
 import Home from '../views/Home.vue'
 import SystemManage from '../views/system/SystemManage.vue'
@@ -139,6 +140,12 @@ const router = createRouter({
       name: 'CodeGen',
       component: CodeGen,
       meta: { title: '系统管理>代码生成' }
+    },
+    {
+      path: '/oper-log',
+      name: 'OperLog',
+      component: OperLog,
+      meta: { title: '系统管理>操作日志' }
     },
     {
       path: '/report-template',

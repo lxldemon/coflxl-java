@@ -335,6 +335,27 @@ comment TEXT,
 create_time DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+
+DROP TABLE IF EXISTS sys_oper_log;
+CREATE TABLE sys_oper_log (
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
+title VARCHAR(256),
+business_type VARCHAR(32),
+method VARCHAR(256),
+request_method VARCHAR(16),
+oper_name VARCHAR(64),
+oper_url VARCHAR(512),
+oper_ip VARCHAR(128),
+oper_param TEXT,
+json_result TEXT,
+status INT,
+error_msg TEXT,
+oper_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO sys_menu (id, parent_id, name, path, icon, sort_no) VALUES
+(13, 1, '操作日志', '/oper-log', 'Document', 8);
+
 INSERT INTO lc_form_definition (id, name, schema_json) VALUES
 ('form_1001', '请假申请表', '[{"label":"请假天数","field":"days","type":"number"},{"label":"请假原因","field":"reason","type":"text"}]');
 

@@ -1,5 +1,6 @@
 package com.coflxl.api.admin.controller.system;
 
+import com.coflxl.api.admin.annotation.OperLog;
 import com.coflxl.api.common.response.ApiResponse;
 import com.coflxl.api.core.datasource.DynamicDataSourceContextHolder;
 import com.coflxl.api.core.domain.entity.ApiDataSource;
@@ -43,6 +44,7 @@ public class AdminUserController {
         return ApiResponse.success(page);
     }
 
+    @OperLog(title = "用户管理", businessType = "SAVE")
     @PostMapping("/save")
     public ApiResponse<Boolean> saveUser(@RequestBody SysUser user) {
         DynamicDataSourceContextHolder.set("PRIMARY");
@@ -72,6 +74,7 @@ public class AdminUserController {
         return ApiResponse.success(true);
     }
 
+    @OperLog(title = "用户管理", businessType = "DELETE")
     @PostMapping("/delete/{id}")
     public ApiResponse<Boolean> deleteUser(@PathVariable("id") Long id) {
         DynamicDataSourceContextHolder.set("PRIMARY");

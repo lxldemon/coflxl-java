@@ -23,14 +23,31 @@ public class SqlToyUnifyFieldsHandler implements IUnifyFieldsHandler {
         map.put("updatedAt", now);
         map.put("createTime", now);
         map.put("updateTime", now);
+
+        String username = com.coflxl.api.common.context.UserContextHolder.getUsername();
+        if (username != null) {
+            map.put("createBy", username);
+            map.put("updateBy", username);
+            map.put("createdBy", username);
+            map.put("updatedBy", username);
+        }
+
         return map;
     }
 
     @Override
     public Map<String, Object> updateUnifyFields() {
         Map<String, Object> map = new HashMap<>();
-        map.put("updatedAt", LocalDateTime.now());
-        map.put("updateTime", LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        map.put("updatedAt", now);
+        map.put("updateTime", now);
+
+        String username = com.coflxl.api.common.context.UserContextHolder.getUsername();
+        if (username != null) {
+            map.put("updateBy", username);
+            map.put("updatedBy", username);
+        }
+
         return map;
     }
 

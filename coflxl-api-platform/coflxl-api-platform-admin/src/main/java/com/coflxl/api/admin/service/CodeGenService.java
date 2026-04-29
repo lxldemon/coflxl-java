@@ -110,7 +110,7 @@ public class CodeGenService {
                     formItems.append("        </el-form-item>\n");
 
                     searchItems.append("          <el-form-item label=\"").append(col.getComment()).append("\">\n");
-                    searchItems.append("            <el-input v-model=\"searchForm.").append(col.getFieldName()).append("\" placeholder=\"请输入").append(col.getComment()).append("\" clearable style=\"width: 100px\" />\n");
+                    searchItems.append("            <el-input v-model=\"searchForm.").append(col.getFieldName()).append("\" placeholder=\"请输入").append(col.getComment()).append("\" clearable style=\"width: 200px\" />\n");
                     searchItems.append("          </el-form-item>\n");
                 }
                 columnDefs.append("  { prop: '").append(col.getFieldName()).append("', label: '").append(col.getComment()).append("' },\n");

@@ -118,7 +118,56 @@
                 </div>
               </el-popover>
               <el-button link type="primary" size="small" class="ml-2" @click="formatJson('visualization')">格式化</el-button>
+              <el-button link type="success" size="small" class="ml-1" @click="applyJsonToVisual">从JSON回填引导</el-button>
             </el-divider>
+            <div class="mb-3 p-3 bg-blue-50 border border-blue-100 rounded-md space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-blue-700">可视化引导配置（推荐）</div>
+                <el-button type="primary" plain size="small" @click="addVisualWidget">添加组件</el-button>
+              </div>
+              <div v-if="visualWidgets.length === 0" class="text-xs text-gray-500">暂无组件，点击“添加组件”开始配置</div>
+              <div
+                v-for="(widget, index) in visualWidgets"
+                :key="`widget-${index}`"
+                class="p-3 bg-white border border-gray-200 rounded space-y-2"
+              >
+                <div class="flex gap-2 items-center">
+                  <el-input v-model="widget.id" size="small" placeholder="组件ID，如 chart1 / table1" />
+                  <el-select v-model="widget.type" size="small" style="width: 100px">
+                    <el-option label="表格" value="table" />
+                    <el-option label="图表" value="chart" />
+                  </el-select>
+                  <el-button link type="danger" size="small" @click="removeVisualWidget(index)">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+                <el-input v-model="widget.title" size="small" placeholder="组件标题（可选）" />
+                <div class="grid grid-cols-2 gap-2">
+                  <el-input v-model="widget.filterField" size="small" placeholder="过滤字段（可选），如 data_type" />
+                  <el-input v-model="widget.filterValue" size="small" placeholder="过滤值（可选），如 detail" />
+                </div>
+                <div v-if="widget.type === 'table'" class="space-y-1">
+                  <el-input
+                    v-model="widget.tableColumnsText"
+                    type="textarea"
+                    :rows="3"
+                    resize="none"
+                    placeholder="表格字段配置（每行一个）：label:prop，例如 姓名:name"
+                  />
+                  <div class="text-xs text-gray-500">不填时自动使用 SQL 返回字段；填写后按配置顺序展示。</div>
+                </div>
+                <div v-if="widget.type === 'chart'" class="grid grid-cols-2 gap-2">
+                  <el-select v-model="widget.chartType" size="small" placeholder="图表类型">
+                    <el-option label="柱状图" value="bar" />
+                    <el-option label="折线图" value="line" />
+                    <el-option label="饼图" value="pie" />
+                  </el-select>
+                  <el-input v-model="widget.xAxis" size="small" placeholder="X轴字段，如 month" />
+                  <el-input v-model="widget.yAxisText" size="small" placeholder="Y轴字段，逗号分隔" />
+                  <el-input v-model="widget.seriesNamesText" size="small" placeholder="系列名称，逗号分隔" />
+                </div>
+              </div>
+            </div>
             <div class="h-[200px] border border-gray-200 rounded-md overflow-hidden mb-4">
               <MonacoEditor v-model="form.visualizationConfigJson" language="json" height="100%" theme="vs" />
             </div>
@@ -146,6 +195,31 @@
               </el-popover>
               <el-button link type="primary" size="small" class="ml-2" @click="formatJson('layout')">格式化</el-button>
             </el-divider>
+            <div class="mb-3 p-3 bg-green-50 border border-green-100 rounded-md space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-green-700">布局引导配置（Grid）</div>
+                <el-button type="success" plain size="small" @click="addLayoutItem">添加布局项</el-button>
+              </div>
+              <div v-if="visualLayoutItems.length === 0" class="text-xs text-gray-500">暂无布局项，点击“添加布局项”开始配置</div>
+              <div
+                v-for="(item, index) in visualLayoutItems"
+                :key="`layout-${index}`"
+                class="p-3 bg-white border border-gray-200 rounded"
+              >
+                <div class="grid grid-cols-3 gap-2 items-center">
+                  <el-select v-model="item.widgetId" size="small" placeholder="选择组件ID">
+                    <el-option v-for="w in visualWidgets" :key="w.id || 'empty'" :label="w.id || '(未命名组件)'" :value="w.id" />
+                  </el-select>
+                  <el-input-number v-model="item.span" :min="1" :max="12" size="small" controls-position="right" />
+                  <el-input-number v-model="item.height" :min="120" :max="1000" :step="20" size="small" controls-position="right" />
+                </div>
+                <div class="flex justify-end mt-1">
+                  <el-button link type="danger" size="small" @click="removeLayoutItem(index)">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+              </div>
+            </div>
             <div class="h-[150px] border border-gray-200 rounded-md overflow-hidden">
               <MonacoEditor v-model="form.layoutConfigJson" language="json" height="100%" theme="vs" />
             </div>
@@ -233,7 +307,7 @@ const saving = ref(false)
 const previewLoading = ref(false)
 const dataSources = ref<any[]>([])
 const previewDataSource = ref('')
-const previewData = shallowRef<any[] | null>(null)
+const previewData = shallowRef<any>(null)
 
 const parsedConfig = computed(() => {
   try {
@@ -306,6 +380,10 @@ const getTableColumns = (widget: any) => {
 }
 
 const paramsList = ref<any[]>([])
+const visualWidgets = ref<any[]>([])
+const visualLayoutItems = ref<any[]>([])
+const syncingFromVisual = ref(false)
+const syncingFromJson = ref(false)
 
 const form = ref({
   id: undefined,
@@ -359,6 +437,162 @@ const formatJson = (type: 'visualization' | 'layout') => {
   }
 }
 
+const serializeColumns = (columns: any[]) => {
+  if (!Array.isArray(columns) || columns.length === 0) return ''
+  return columns
+    .map((col: any) => `${col?.label || col?.prop || ''}:${col?.prop || ''}`.trim())
+    .filter(Boolean)
+    .join('\n')
+}
+
+const parseColumnsText = (text: string) => text
+  .split('\n')
+  .map(line => line.trim())
+  .filter(Boolean)
+  .map(line => {
+    const [left, right] = line.split(':')
+    const label = right ? left?.trim() : line
+    const prop = right ? right.trim() : line
+    return { label: label || prop, prop }
+  })
+  .filter(col => col.prop)
+
+const buildWidgetModel = (widget: any) => ({
+  id: widget?.id || '',
+  type: widget?.type || 'table',
+  title: widget?.title || '',
+  filterField: widget?.dataFilter?.field || '',
+  filterValue: widget?.dataFilter?.value ?? '',
+  tableColumnsText: serializeColumns(widget?.tableConfig?.columns || []),
+  chartType: widget?.chartConfig?.chartType || 'bar',
+  xAxis: widget?.chartConfig?.xAxis || '',
+  yAxisText: Array.isArray(widget?.chartConfig?.yAxis) ? widget.chartConfig.yAxis.join(',') : '',
+  seriesNamesText: Array.isArray(widget?.chartConfig?.seriesNames) ? widget.chartConfig.seriesNames.join(',') : ''
+})
+
+const isSameByJson = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
+
+const syncVisualFromJson = () => {
+  syncingFromJson.value = true
+  try {
+    const config = parsedConfig.value
+    const layout = parsedLayout.value
+    const nextWidgets = Array.isArray(config?.widgets) ? config.widgets.map((w: any) => buildWidgetModel(w)) : []
+    const nextLayoutItems = Array.isArray(layout?.items)
+      ? layout.items.map((item: any) => ({
+        widgetId: item?.widgetId || '',
+        span: Number(item?.span) || 12,
+        height: Number(item?.height) || 300
+      }))
+      : []
+    if (!isSameByJson(visualWidgets.value, nextWidgets)) {
+      visualWidgets.value = nextWidgets
+    }
+    if (!isSameByJson(visualLayoutItems.value, nextLayoutItems)) {
+      visualLayoutItems.value = nextLayoutItems
+    }
+  } finally {
+    syncingFromJson.value = false
+  }
+}
+
+const applyJsonToVisual = () => {
+  syncVisualFromJson()
+  ElMessage.success('已从 JSON 回填到引导配置')
+}
+
+const splitByComma = (text: string) => text
+  .split(',')
+  .map(item => item.trim())
+  .filter(Boolean)
+
+const syncJsonFromVisual = () => {
+  if (syncingFromJson.value) return
+  syncingFromVisual.value = true
+  try {
+    const nextWidgets = visualWidgets.value
+      .filter((w: any) => w.id)
+      .map((w: any) => {
+        const dataFilter = w.filterField
+          ? { field: w.filterField, value: w.filterValue }
+          : undefined
+        if (w.type === 'chart') {
+          return {
+            id: w.id,
+            type: 'chart',
+            title: w.title || undefined,
+            dataFilter,
+            chartConfig: {
+              chartType: w.chartType || 'bar',
+              xAxis: w.xAxis || '',
+              yAxis: splitByComma(w.yAxisText || ''),
+              seriesNames: splitByComma(w.seriesNamesText || '')
+            }
+          }
+        }
+        return {
+          id: w.id,
+          type: 'table',
+          title: w.title || undefined,
+          dataFilter,
+          tableConfig: { columns: parseColumnsText(w.tableColumnsText || '') }
+        }
+      })
+    const nextLayoutItems = visualLayoutItems.value
+      .filter((item: any) => item.widgetId)
+      .map((item: any) => ({
+        widgetId: item.widgetId,
+        span: Math.min(Math.max(Number(item.span) || 12, 1), 12),
+        height: Math.max(Number(item.height) || 300, 120)
+      }))
+    const nextVisualizationJson = JSON.stringify({ widgets: nextWidgets }, null, 2)
+    const nextLayoutJson = JSON.stringify({ layout: 'grid', items: nextLayoutItems }, null, 2)
+    if (form.value.visualizationConfigJson !== nextVisualizationJson) {
+      form.value.visualizationConfigJson = nextVisualizationJson
+    }
+    if (form.value.layoutConfigJson !== nextLayoutJson) {
+      form.value.layoutConfigJson = nextLayoutJson
+    }
+  } finally {
+    syncingFromVisual.value = false
+  }
+}
+
+const addVisualWidget = () => {
+  visualWidgets.value.push({
+    id: `widget${visualWidgets.value.length + 1}`,
+    type: 'table',
+    title: '',
+    filterField: '',
+    filterValue: '',
+    tableColumnsText: '',
+    chartType: 'bar',
+    xAxis: '',
+    yAxisText: '',
+    seriesNamesText: ''
+  })
+}
+
+const removeVisualWidget = (index: number) => {
+  const removed = visualWidgets.value[index]
+  visualWidgets.value.splice(index, 1)
+  if (removed?.id) {
+    visualLayoutItems.value = visualLayoutItems.value.filter((item: any) => item.widgetId !== removed.id)
+  }
+}
+
+const addLayoutItem = () => {
+  visualLayoutItems.value.push({
+    widgetId: visualWidgets.value[0]?.id || '',
+    span: 12,
+    height: 300
+  })
+}
+
+const removeLayoutItem = (index: number) => {
+  visualLayoutItems.value.splice(index, 1)
+}
+
 onMounted(async () => {
   await fetchDataSources()
   const id = route.query.id
@@ -391,7 +625,16 @@ onMounted(async () => {
       ElMessage.error('获取模板详情失败')
     }
   }
+  syncVisualFromJson()
 })
+
+watch(
+  [visualWidgets, visualLayoutItems],
+  () => {
+    syncJsonFromVisual()
+  },
+  { deep: true }
+)
 
 const fetchDataSources = async () => {
   dataSources.value = await request.get('/admin/data-source/list')

@@ -24,6 +24,7 @@ import ProcessStart from '../views/workflow/ProcessStart.vue'
 import MyTasks from '../views/workflow/MyTasks.vue'
 import WfDefManage from '../views/workflow/WfDefManage.vue'
 import FormManage from '../views/workflow/FormManage.vue'
+import SysCommonSearchManage from '../views/yzt/SysCommonSearchManage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -162,6 +163,12 @@ const router = createRouter({
       name: 'ReportViewer',
       component: ReportViewer,
       meta: { title: '报表生成器>报表查看器' }
+    },
+    {
+      path: '/yzt/sysCommonSearch',
+      name: 'SysCommonSearchManage',
+      component: SysCommonSearchManage,
+      meta: { title: '一张图>SQL公共查询' }
     }
   ]
 })

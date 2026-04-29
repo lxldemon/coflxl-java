@@ -21,6 +21,8 @@ public class SqlToyUnifyFieldsHandler implements IUnifyFieldsHandler {
         // 这里的 key 必须是实体类中的属性名，而不是数据库字段名
         map.put("createdAt", now);
         map.put("updatedAt", now);
+        map.put("createTime", now);
+        map.put("updateTime", now);
         return map;
     }
 
@@ -28,6 +30,7 @@ public class SqlToyUnifyFieldsHandler implements IUnifyFieldsHandler {
     public Map<String, Object> updateUnifyFields() {
         Map<String, Object> map = new HashMap<>();
         map.put("updatedAt", LocalDateTime.now());
+        map.put("updateTime", LocalDateTime.now());
         return map;
     }
 

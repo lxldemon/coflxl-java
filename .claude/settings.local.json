@@ -7,7 +7,8 @@
       "Bash(npm run *)",
       "Bash(npm *)",
       "Bash(curl -sSf \"http://127.0.0.1:3000/login\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(dir *)"
     ]
   }
 }

@@ -52,6 +52,20 @@
             <el-form-item label="系统名称" required>
               <el-input v-model="form.systemName" placeholder="例如: 财审项目" />
             </el-form-item>
+
+            <h3 class="text-sm font-bold text-gray-800 mt-4 mb-2 border-l-4 border-blue-500 pl-2">接口开放鉴权凭证</h3>
+            <div class="bg-gray-50 border p-3 rounded-md mb-4">
+              <el-form-item label="App-Key" class="mb-3">
+                <el-input v-model="form.appKey" placeholder="默认与系统编码一致，可自定义" />
+              </el-form-item>
+              <el-form-item label="App-Secret" class="mb-0">
+                <div class="flex items-center gap-2 w-full">
+                  <el-input v-model="form.appSecret" placeholder="请填入或生成一段随机字符串" />
+                  <el-button @click="generateSecret">随机生成</el-button>
+                </div>
+              </el-form-item>
+            </div>
+
             <el-form-item label="开发工程师">
               <el-input v-model="form.devEngineer" placeholder="请输入开发工程师姓名" />
             </el-form-item>
@@ -96,6 +110,8 @@ const exportExcel = async () => {
     const exportData = res.map((item: any) => ({
       '系统编码': item.systemCode,
       '系统名称': item.systemName,
+      '客户端ID(App-Key)': item.appKey,
+      '客户端密钥(App-Secret)': item.appSecret,
       '开发工程师': item.devEngineer,
       '实施工程师': item.ssEngineer,
       '创建时间': formatTime(item.createdAt),
@@ -113,18 +129,22 @@ const exportExcel = async () => {
 }
 
 const columns = [
-  { prop: 'systemCode', label: '系统编码', width: 150 },
+  { prop: 'systemCode', label: '系统编码', width: 120 },
   { prop: 'systemName', label: '系统名称', minWidth: 150 },
-  { prop: 'devEngineer', label: '开发工程师', width: 120 },
-  { prop: 'ssEngineer', label: '实施工程师', width: 120 },
-  { prop: 'createdAt', label: '创建时间', width: 180, slotName: 'timeSlot' },
-  { label: '操作', width: 150, slotName: 'actionSlot', fixed: 'right' }
+  { prop: 'appKey', label: 'App-Key', minWidth: 120 },
+  { prop: 'appSecret', label: 'App-Secret', minWidth: 150 },
+  { prop: 'devEngineer', label: '开发工程师', width: 100 },
+  { prop: 'ssEngineer', label: '实施工程师', width: 100 },
+  { prop: 'createdAt', label: '创建时间', width: 160, slotName: 'timeSlot' },
+  { label: '操作', width: 120, slotName: 'actionSlot', fixed: 'right' }
 ]
 
 const form = ref({
   id: undefined,
   systemCode: '',
   systemName: '',
+  appKey: '',
+  appSecret: '',
   devEngineer: '',
   ssEngineer: '',
   remark: ''
@@ -143,7 +163,7 @@ const openDialog = (row?: any) => {
     form.value = { ...row }
   } else {
     isEdit.value = false
-    form.value = { id: undefined, systemCode: '', systemName: '', devEngineer: '', ssEngineer: '', remark: '' }
+    form.value = { id: undefined, systemCode: '', systemName: '', appKey: '', appSecret: '', devEngineer: '', ssEngineer: '', remark: '' }
   }
   dialogVisible.value = true
 }
@@ -153,6 +173,13 @@ const saveSystem = async () => {
     ElMessage.warning('请填写必填项')
     return
   }
+  if (!form.value.appKey) {
+    form.value.appKey = form.value.systemCode
+  }
+  if (!form.value.appSecret) {
+    form.value.appSecret = generateRandomString(32)
+  }
+
   saving.value = true
   try {
     await request.post('/admin/system/save', form.value)
@@ -162,6 +189,20 @@ const saveSystem = async () => {
   } finally {
     saving.value = false
   }
+}
+
+const generateSecret = () => {
+  form.value.appSecret = generateRandomString(32)
+}
+
+const generateRandomString = (length: number) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  const charactersLength = characters.length
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength))
+  }
+  return result
 }
 
 const handleDelete = async (row: any) => {

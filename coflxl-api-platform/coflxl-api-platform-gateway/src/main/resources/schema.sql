@@ -88,6 +88,8 @@ system_code VARCHAR(64) NOT NULL UNIQUE,
 system_name VARCHAR(128) NOT NULL,
 dev_engineer VARCHAR(64),
 ss_engineer VARCHAR(64),
+app_key VARCHAR(64) UNIQUE,
+app_secret VARCHAR(128),
 remark VARCHAR(256),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -148,12 +150,13 @@ VALUES ('createOrder', '[
 ]', 'MULTI', true);
 
 -- 迁移系统配置
-INSERT INTO sys_api_system (system_code, system_name, dev_engineer, ss_engineer) VALUES
-('system_csxt', '财审项目', '占贤银', '李秀'),
-('system_guanwang', '本地Mysql测试', '刘小龙', '刘小龙'),
-('system_jhyh', '计划养护系统', '刘小龙', '李秀'),
-('system_sjzl', '数据治理与决策分析', '刘小龙', '李秀'),
-('system_yzt', '一张图', '刘小龙', '刘小龙');
+INSERT INTO sys_api_system (system_code, system_name, dev_engineer, ss_engineer, app_key, app_secret) VALUES
+('system_csxt', '财审项目', '占贤银', '李秀', 'csxt_key', 'csxt_secret_123'),
+('system_guanwang', '本地Mysql测试', '刘小龙', '刘小龙', 'gw_key', 'gw_secret_123'),
+('system_jhyh', '计划养护系统', '刘小龙', '李秀', 'jhyh_key', 'jhyh_secret_123'),
+('system_sjzl', '数据治理与决策分析', '刘小龙', '李秀', 'sjzl_key', 'sjzl_secret_123'),
+('system_yzt', '一张图', '刘小龙', '刘小龙', 'yzt_key', 'yzt_secret_123');
+
 
 -- 迁移数据源配置
 INSERT INTO sys_api_data_source (code, name, jdbc_url, username, password_encrypted, driver_class_name, status, system_code) VALUES

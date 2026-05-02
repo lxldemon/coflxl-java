@@ -30,7 +30,7 @@ public class ApiExecuteService {
 
     @Autowired
     private DataSourceManager dataSourceManager;
-    
+
     @Autowired
     private DynamicRoutingDataSource dynamicRoutingDataSource;
 
@@ -55,8 +55,8 @@ public class ApiExecuteService {
                 throw new ApiException(ErrorCodeEnum.API_OFFLINE);
             }
 
-            // 4. 校验调用方权限 (TODO: 接入鉴权中心，此处预留扩展点)
-            // checkPermission(apiDef, request);
+            // 4. 校验调用方权限 (接入外部系统凭证校验 / 内部系统调试免鉴权)
+            checkPermission(apiDef, request);
 
             // 合并参数
             if (queryParams != null) mergedParams.putAll(queryParams);
@@ -144,6 +144,56 @@ public class ApiExecuteService {
         }
     }
 
+    private void checkPermission(ApiDefinition apiDef, HttpServletRequest request) {
+        if (request == null) return;
+
+        // 1. 优先尝试内部调试 Token 免密(只要 Token 有效)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                com.auth0.jwt.interfaces.DecodedJWT jwt = com.coflxl.api.common.utils.JwtUtil.verifyToken(token);
+                if (jwt != null) {
+                    return; // 内部系统调试，鉴权通过
+                }
+            } catch (Exception e) {
+                // Ignore and fallback to AppKey verify
+            }
+        }
+
+        // 2. 外部系统调用鉴权 (App-Key / App-Secret)
+        String appKey = request.getHeader("App-Key");
+        String appSecret = request.getHeader("App-Secret");
+
+        if (appKey == null || appKey.trim().isEmpty() || appSecret == null || appSecret.trim().isEmpty()) {
+            throw new ApiException(ErrorCodeEnum.UNAUTHORIZED.getCode(), "Authentication failed. Missing App-Key or App-Secret, or invalid Bearer token.");
+        }
+
+        String currentDb = DynamicDataSourceContextHolder.get();
+        DynamicDataSourceContextHolder.set("PRIMARY");
+        try {
+            com.coflxl.api.core.domain.entity.ApiSystem system = sqlToyLazyDao.loadBySql(
+                    "select * from sys_api_system where app_key = :appKey",
+                    java.util.Map.of("appKey", appKey),
+                    com.coflxl.api.core.domain.entity.ApiSystem.class
+            );
+            if (system == null || !appSecret.equals(system.getAppSecret())) {
+                throw new ApiException(ErrorCodeEnum.UNAUTHORIZED.getCode(), "Invalid App-Key or App-Secret");
+            }
+
+            // 如果接口有归属系统限定，并且调用方不是该系统（可选）：
+            // if (apiDef.getSystemCode() != null && !apiDef.getSystemCode().equals(system.getSystemCode())) {
+            //    throw new ApiException(ErrorCodeEnum.FORBIDDEN.getCode(), "The caller system has no permission to access this API.");
+            // }
+        } finally {
+            if (currentDb != null) {
+                DynamicDataSourceContextHolder.set(currentDb);
+            } else {
+                DynamicDataSourceContextHolder.clear();
+            }
+        }
+    }
+
     /**
      * 执行批量 SQL (如批量插入、批量更新)
      */
@@ -171,11 +221,11 @@ public class ApiExecuteService {
     private Object executeMultiSql(String sqlTextJson, Map<String, Object> params) throws Exception {
         List<Map<String, Object>> steps = objectMapper.readValue(sqlTextJson, new TypeReference<List<Map<String, Object>>>(){});
         long totalAffected = 0;
-        
+
         for (Map<String, Object> step : steps) {
             String type = (String) step.get("type");
             String sql = (String) step.get("sql");
-            
+
             if ("BATCH".equalsIgnoreCase(type)) {
                 String loopVar = (String) step.get("loopVar");
                 List<Map<String, Object>> list = (List<Map<String, Object>>) params.get(loopVar);
@@ -205,10 +255,10 @@ public class ApiExecuteService {
             DynamicDataSourceContextHolder.set("PRIMARY");
             String paramsJson = objectMapper.writeValueAsString(params);
             String ip = request != null ? request.getRemoteAddr() : "unknown";
-            
+
             String insertLogSql = "insert into sys_api_call_log(api_code, request_params, response_code, response_message, cost_ms, success_flag, client_ip) " +
-                                  "values(:apiCode, :params, :code, :msg, :cost, :success, :ip)";
-            
+                    "values(:apiCode, :params, :code, :msg, :cost, :success, :ip)";
+
             Map<String, Object> logParams = new HashMap<>();
             logParams.put("apiCode", apiCode);
             logParams.put("params", paramsJson);
@@ -217,7 +267,7 @@ public class ApiExecuteService {
             logParams.put("cost", costMs);
             logParams.put("success", success);
             logParams.put("ip", ip);
-            
+
             sqlToyLazyDao.executeSql(insertLogSql, logParams);
         } catch (Exception e) {
             // 日志记录失败不影响主流程

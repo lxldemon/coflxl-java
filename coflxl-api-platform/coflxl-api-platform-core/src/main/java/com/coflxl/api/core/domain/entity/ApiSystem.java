@@ -28,6 +28,12 @@ public class ApiSystem implements Serializable {
     @Column(name = "ss_engineer")
     private String ssEngineer;
 
+    @Column(name = "app_key")
+    private String appKey;
+
+    @Column(name = "app_secret")
+    private String appSecret;
+
     @Column(name = "remark")
     private String remark;
 
@@ -75,6 +81,22 @@ public class ApiSystem implements Serializable {
 
     public void setSsEngineer(String ssEngineer) {
         this.ssEngineer = ssEngineer;
+    }
+
+    public String getAppKey() {
+        return appKey;
+    }
+
+    public void setAppKey(String appKey) {
+        this.appKey = appKey;
+    }
+
+    public String getAppSecret() {
+        return appSecret;
+    }
+
+    public void setAppSecret(String appSecret) {
+        this.appSecret = appSecret;
     }
 
     public String getRemark() {
